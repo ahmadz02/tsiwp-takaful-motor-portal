@@ -86,7 +86,7 @@
         <div class="flex flex-wrap gap-2">
           <div class="relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input id="search-input" type="search" placeholder="Search IFAR, prospect, vehicle no." class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm w-64 bg-white">
+            <input id="search-input" type="search" placeholder="Search payment ref, IFAR, prospect, vehicle" class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm w-64 bg-white">
           </div>
           <select id="status-filter" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
             <option value="">All statuses</option>
@@ -94,12 +94,32 @@
             <option value="SUBMITTED">Sent to Sales Dept</option>
             <option value="CLOSED">Closed</option>
           </select>
+          <div class="flex items-center gap-1 border border-slate-300 rounded-lg bg-white pl-2">
+            <i class="fa-regular fa-calendar text-slate-400 text-xs"></i>
+            <select id="date-basis" title="Which date to filter by" class="py-1.5 pr-1 text-sm bg-transparent border-none focus:outline-none">
+              <option value="created_at">Created</option>
+              <option value="submitted_at">Submitted</option>
+              <option value="closed_at">Closed</option>
+            </select>
+            <select id="month-filter" class="py-1.5 px-1 text-sm bg-transparent border-l border-slate-200 focus:outline-none">
+              <option value="">All months</option>
+              <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+              <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <select id="year-filter" class="py-1.5 pl-1 pr-2 text-sm bg-transparent border-l border-slate-200 focus:outline-none">
+              <option value="">All years</option>
+            </select>
+          </div>
+          <button type="button" onclick="resetFilters()" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100">Reset</button>
         </div>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 text-slate-500 text-xs">
             <tr>
+              <th class="px-5 py-3 font-semibold">Payment Ref No.</th>
               <th class="px-5 py-3 font-semibold">IFAR Name</th>
               <th class="px-5 py-3 font-semibold">Prospect Name</th>
               <th class="px-5 py-3 font-semibold">Vehicle Number</th>
@@ -289,7 +309,8 @@
     document.getElementById('prev-page').addEventListener('click', () => { currentPage--; renderTable(); });
     document.getElementById('next-page').addEventListener('click', () => { currentPage++; renderTable(); });
     document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
-    document.getElementById('status-filter').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    ['status-filter', 'date-basis', 'month-filter', 'year-filter'].forEach(id =>
+      document.getElementById(id).addEventListener('input', () => { currentPage = 1; renderTable(); }));
     ['in-reg-no', 'in-owner-id'].forEach(id => document.getElementById(id).addEventListener('input', e => {
       const pos = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); e.target.setSelectionRange(pos, pos);
     }));
@@ -307,6 +328,7 @@
     } else {
       proposals = data || [];
     }
+    populateYearFilter();
     renderTable();
     updateStats();
   }
@@ -314,11 +336,40 @@
   function filteredProposals() {
     const q = document.getElementById('search-input').value.trim().toLowerCase();
     const st = document.getElementById('status-filter').value;
+    const basis = document.getElementById('date-basis').value;
+    const month = document.getElementById('month-filter').value;
+    const year = document.getElementById('year-filter').value;
     return proposals.filter(p => {
       if (st && p.status !== st) return false;
+      if (month || year) {
+        if (!p[basis]) return false;                       // e.g. not submitted yet
+        const d = new Date(p[basis]);
+        if (month && d.getMonth() + 1 !== Number(month)) return false;
+        if (year && d.getFullYear() !== Number(year)) return false;
+      }
       if (!q) return true;
-      return [p.ifar_name, p.owner_name, p.vehicle_reg_no, p.reference_no].some(v => String(v || '').toLowerCase().includes(q));
+      return [p.ifar_name, p.owner_name, p.vehicle_reg_no, p.reference_no, p.payment_reference].some(v => String(v || '').toLowerCase().includes(q));
     });
+  }
+
+  function populateYearFilter() {
+    const sel = document.getElementById('year-filter');
+    const current = sel.value;
+    const years = new Set([new Date().getFullYear()]);
+    proposals.forEach(p => ['created_at', 'submitted_at', 'closed_at'].forEach(k => { if (p[k]) years.add(new Date(p[k]).getFullYear()); }));
+    sel.innerHTML = '<option value="">All years</option>' +
+      [...years].sort((a, b) => b - a).map(y => `<option value="${y}">${y}</option>`).join('');
+    if ([...sel.options].some(o => o.value === current)) sel.value = current;
+  }
+
+  function resetFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('status-filter').value = '';
+    document.getElementById('date-basis').value = 'created_at';
+    document.getElementById('month-filter').value = '';
+    document.getElementById('year-filter').value = '';
+    currentPage = 1;
+    renderTable();
   }
 
   function updateStats() {
@@ -350,7 +401,7 @@
     document.getElementById('next-page').disabled = currentPage >= totalPages;
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-slate-400">${proposals.length ? 'No prospects match your search.' : 'No prospects yet. Click "New Prospect" to begin.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-10 text-center text-slate-400">${proposals.length ? 'No prospects match your search.' : 'No prospects yet. Click "New Prospect" to begin.'}</td></tr>`;
       return;
     }
 
@@ -371,6 +422,7 @@
       }
 
       return `<tr class="hover:bg-slate-50/80">
+        <td class="px-5 py-4">${p.payment_reference ? `<div class="font-mono text-xs font-semibold text-slate-800 break-all">${escapeHtml(p.payment_reference)}</div>${p.payment_amount != null ? `<div class="text-[11px] text-slate-400">RM ${fmtMoney(p.payment_amount)}</div>` : ''}` : '<span class="text-slate-300 text-xs">—</span>'}</td>
         <td class="px-5 py-4"><div class="font-semibold text-slate-800">${escapeHtml(p.ifar_name)}</div><div class="text-xs text-slate-400">${escapeHtml(p.ifar_phone)}</div></td>
         <td class="px-5 py-4"><div class="font-bold text-slate-900">${escapeHtml(p.owner_name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(p.reference_no)}</div></td>
         <td class="px-5 py-4"><div class="font-semibold text-slate-800 font-mono">${escapeHtml(p.vehicle_reg_no)}</div><div class="text-xs text-slate-400">${escapeHtml(p.vehicle_model)}</div></td>
