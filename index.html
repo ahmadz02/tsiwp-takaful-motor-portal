@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TSI Wealth Planners - Motor Takaful Value Proposal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ===== Supabase connection (standalone) =====
+  const SUPABASE_URL = 'https://olgijssakwgttfnomnwz.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_xMblASeeRQt-UTFxsi9vNw_p4hWUjUP';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .brand-navy { color: #212F6E; }
+  .bg-brand-navy { background-color: #212F6E; }
+  .bg-brand-gold { background-color: #FFCB08; }
+  .text-brand-gold { color: #FFCB08; }
+  .border-brand-navy { border-color: #212F6E; }
+  .ring-brand { --tw-ring-color: #212F6E; }
+  .field { width:100%; padding:.6rem .85rem; border-radius:.75rem; border:1px solid #cbd5e1; font-size:.875rem; background:#fff; }
+  .field:focus { outline:none; border-color:#212F6E; box-shadow:0 0 0 2px rgba(33,47,110,.18); }
+  .field-label { display:block; font-size:.72rem; font-weight:600; color:#334155; margin-bottom:.3rem; }
+  .money { text-align:right; font-variant-numeric: tabular-nums; }
+  input[type=number]::-webkit-inner-spin-button { opacity:.4; }
+  .locked { opacity:.45; pointer-events:none; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+
+  <header id="app-header" class="bg-brand-navy text-white shadow-md sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-start space-x-3">
+        <div class="bg-white/10 p-2 rounded-lg text-brand-gold"><i class="fa-solid fa-car-side text-xl"></i></div>
+        <div>
+          <h1 class="font-bold text-lg leading-none">TSI Wealth Planners</h1>
+          <span class="text-xs text-slate-300">Motor Takaful Value Proposal</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+      </div>
+    </div>
+  </header>
+
+  <div id="toast-container" class="fixed top-20 right-4 z-[60] flex flex-col space-y-2 max-w-sm"></div>
+
+  <main id="app-main" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Motor Takaful Value Proposal</h2>
+        <p class="text-slate-500 text-sm mt-1">Prepare a motor takaful quotation, share the link with the IFAR, and receive the client's choice and payment slip.</p>
+      </div>
+      <button onclick="openProspectModal()" class="inline-flex items-center justify-center bg-brand-navy hover:opacity-90 text-white font-medium px-5 py-2.5 rounded-xl shadow-sm space-x-2">
+        <i class="fa-solid fa-plus"></i><span>New Prospect</span>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
+        <div><p class="text-xs text-slate-500">Open</p><p id="stat-open" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-paper-plane"></i></div>
+        <div><p class="text-xs text-slate-500">Sent to Sales Dept</p><p id="stat-submitted" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
+        <div><p class="text-xs text-slate-500">Closed</p><p id="stat-closed" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-car"></i></div>
+        <div><p class="text-xs text-slate-500">Total Prospects</p><p id="stat-total" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-3 justify-between items-center bg-slate-50/50">
+        <h3 class="font-semibold text-slate-800">Prospects</h3>
+        <div class="flex flex-wrap gap-2">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+            <input id="search-input" type="search" placeholder="Search IFAR, prospect, vehicle no." class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm w-64 bg-white">
+          </div>
+          <select id="status-filter" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
+            <option value="">All statuses</option>
+            <option value="OPEN">Open</option>
+            <option value="SUBMITTED">Sent to Sales Dept</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 text-slate-500 text-xs">
+            <tr>
+              <th class="px-5 py-3 font-semibold">IFAR Name</th>
+              <th class="px-5 py-3 font-semibold">Prospect Name</th>
+              <th class="px-5 py-3 font-semibold">Vehicle Number</th>
+              <th class="px-5 py-3 font-semibold">Submit Date</th>
+              <th class="px-5 py-3 font-semibold">Closed Date</th>
+              <th class="px-5 py-3 font-semibold">Status</th>
+              <th class="px-5 py-3 font-semibold">Attachment</th>
+              <th class="px-5 py-3 font-semibold text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="prospect-table-body" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+      <div class="px-6 py-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 text-sm">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-500">Rows per page</span>
+          <select id="page-size" class="border border-slate-300 rounded-lg px-2 py-1 text-sm bg-white">
+            <option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option>
+          </select>
+          <span id="range-info" class="text-slate-500"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="prev-page" class="border border-slate-300 px-3 py-1.5 rounded-lg disabled:opacity-40">Prev</button>
+          <span id="page-info" class="text-slate-600"></span>
+          <button id="next-page" class="border border-slate-300 px-3 py-1.5 rounded-lg disabled:opacity-40">Next</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ NEW / EDIT PROSPECT MODAL ============ -->
+  <div id="modal-prospect" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl relative my-8">
+      <div class="flex justify-between items-center border-b border-slate-100 px-6 sm:px-8 py-5">
+        <div>
+          <h3 id="modal-title" class="text-xl font-bold text-slate-900">New Prospect</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Motor Takaful Value Proposal</p>
+        </div>
+        <button onclick="closeProspectModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="form-prospect" onsubmit="handleSaveProspect(event)" class="px-6 sm:px-8 py-6 space-y-8" novalidate>
+
+        <!-- IFAR -->
+        <section class="space-y-3">
+          <h4 class="text-sm font-bold brand-navy flex items-center gap-2"><i class="fa-solid fa-user-tie"></i> IFAR</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="field-label">IFAR Name *</label><input id="in-ifar-name" class="field" placeholder="e.g. Nur Aisyah binti Rahman"></div>
+            <div><label class="field-label">IFAR Phone Number *</label><input id="in-ifar-phone" type="tel" class="field" placeholder="e.g. 012-345 6789"></div>
+          </div>
+        </section>
+
+        <!-- PROSPECT -->
+        <section class="space-y-3">
+          <h4 class="text-sm font-bold brand-navy flex items-center gap-2"><i class="fa-solid fa-id-card"></i> Prospect</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div><label class="field-label">Name of Vehicle Owner *</label><input id="in-owner-name" class="field" placeholder="As per IC / Passport"></div>
+            <div><label class="field-label">Identification Number (IC / Passport) *</label><input id="in-owner-id" class="field uppercase" placeholder="e.g. 901218-08-5392"></div>
+            <div><label class="field-label">Vehicle Registration Number *</label><input id="in-reg-no" class="field uppercase" placeholder="e.g. AML3127"></div>
+            <div><label class="field-label">Type of Vehicle *</label>
+              <select id="in-vehicle-type" class="field">
+                <option value="">Select type</option><option>Sedan</option><option>SUV</option><option>MPV</option><option>Motorcycle</option>
+              </select>
+            </div>
+            <div><label class="field-label">Vehicle Brand and Model *</label><input id="in-vehicle-model" class="field" placeholder="e.g. Toyota Corolla Cross 1.8V"></div>
+            <div><label class="field-label">Vehicle Engine Capacity</label><input id="in-engine-cc" class="field" placeholder="e.g. 1798 cc"></div>
+            <div><label class="field-label">Vehicle Usage Type *</label>
+              <select id="in-usage-type" class="field"><option value="">Select usage</option><option>Personal</option><option>Company</option></select>
+            </div>
+            <div><label class="field-label">NCD</label><input id="in-ncd" class="field" placeholder="e.g. 38.33%"></div>
+            <div class="sm:col-span-2"><label class="field-label">Vehicle Address</label><textarea id="in-vehicle-address" rows="2" class="field" placeholder="Address where the vehicle is kept"></textarea></div>
+            <div><label class="field-label">Prospect Email Address</label><input id="in-prospect-email" type="email" class="field" placeholder="e.g. fatehah@example.com"></div>
+            <div><label class="field-label">Prospect Phone Number</label><input id="in-prospect-phone" type="tel" class="field" placeholder="e.g. 013-456 7890"></div>
+            <div class="sm:col-span-2"><label class="field-label">Vehicle Coverage Term</label><input id="in-coverage-term" class="field" placeholder="e.g. 18/12/2026 – 17/12/2027"></div>
+          </div>
+        </section>
+
+        <!-- PROPOSAL -->
+        <section class="space-y-5">
+          <h4 class="text-sm font-bold brand-navy flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar"></i> Proposal</h4>
+          <p class="text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">I would like to submit the following proposal for your review and consideration:</p>
+
+          <div>
+            <p class="text-xs font-semibold text-slate-700 mb-2">Part 1 · Takaful operators to quote</p>
+            <div id="part1-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold text-slate-700 mb-2">Part 2 · Coverage options and pricing</p>
+            <div id="part2-container" class="space-y-5"></div>
+          </div>
+        </section>
+
+        <div class="pt-4 border-t border-slate-100 flex justify-end space-x-3">
+          <button type="button" onclick="closeProspectModal()" class="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-medium">Cancel</button>
+          <button type="submit" id="save-prospect-btn" class="px-5 py-2.5 rounded-xl bg-brand-navy hover:opacity-90 text-white text-sm font-medium shadow-sm flex items-center space-x-2">
+            <i class="fa-solid fa-link"></i><span id="save-prospect-label">Save &amp; Create Link</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ SHARE LINK MODAL ============ -->
+  <div id="modal-share" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl mt-16">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-link"></i></div>
+        <h3 class="text-xl font-bold text-slate-900">Proposal Link Ready</h3>
+        <p id="share-subtitle" class="text-xs text-slate-500">Share this link with the IFAR. The IFAR or client selects an option and uploads the payment slip.</p>
+      </div>
+      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center space-x-2">
+        <input type="text" id="share-link-input" readonly class="bg-transparent border-none w-full text-xs text-slate-700 focus:outline-none font-mono">
+        <button onclick="copyShareLink()" class="px-3 py-1.5 bg-brand-navy hover:opacity-90 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 shrink-0">
+          <i class="fa-solid fa-copy"></i><span>Copy</span>
+        </button>
+      </div>
+      <div class="border-t border-slate-100 pt-4 flex flex-col gap-2">
+        <button id="whatsapp-share-btn" onclick="whatsappShareLink()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+          <i class="fa-brands fa-whatsapp"></i><span id="whatsapp-share-label">Share with IFAR on WhatsApp</span>
+        </button>
+        <button onclick="previewShareLink()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Preview Link</span>
+        </button>
+        <button onclick="closeShareModal()" class="w-full py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-medium">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ VIEW DETAIL MODAL ============ -->
+  <div id="modal-view" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl relative my-8">
+      <div class="flex justify-between items-center border-b border-slate-100 px-6 sm:px-8 py-5">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900">Proposal Details</h3>
+          <p id="view-ref" class="text-xs text-slate-500 mt-0.5 font-mono"></p>
+        </div>
+        <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div id="view-body" class="px-6 sm:px-8 py-6 space-y-6"></div>
+    </div>
+  </div>
+
+<script>
+  // ---------- Constants ----------
+  const OPERATORS = [
+    { name: 'Etiqa General Takaful Berhad',         short: 'Etiqa',            color: '#E8A317', tint: '#FDF3D7' },
+    { name: 'Syarikat Takaful Malaysia Am Berhad',  short: 'Takaful Malaysia', color: '#2E9E4F', tint: '#DFF3E5' },
+    { name: 'Takaful Ikhlas General Berhad',        short: 'Takaful Ikhlas',   color: '#7CB82F', tint: '#EAF5DC' },
+    { name: 'Zurich General Takaful Berhad',        short: 'Zurich Takaful',   color: '#1F63B5', tint: '#DCE8F7' }
+  ];
+  const COVERAGE_OPTIONS = [
+    { code: 'COMP',       name: 'Comprehensive' },
+    { code: 'COMP_SP',    name: 'Comprehensive + Special Perils' },
+    { code: 'COMP_SP_WS', name: 'Comprehensive + Special Perils + Windscreen' },
+    { code: 'COMP_WS',    name: 'Comprehensive + Windscreen' },
+    { code: 'TP',         name: 'Third Party' },
+    { code: 'TPT',        name: 'Third Party and Theft' }
+  ];
+  const DEFAULT_ADMIN_FEE = 20;
+  const STORAGE_BUCKET = 'motor-proposals';
+  const PUBLIC_PAGE = 'motor-proposal-view.html';
+
+  // ---------- State ----------
+  let proposals = [];
+  let currentPage = 1;
+  let editingId = null;       // dbId when editing an OPEN case
+  let shareTarget = null;     // proposal being shared
+  let formState = null;       // Part 1 / Part 2 working state
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    document.getElementById('page-size').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    document.getElementById('prev-page').addEventListener('click', () => { currentPage--; renderTable(); });
+    document.getElementById('next-page').addEventListener('click', () => { currentPage++; renderTable(); });
+    document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    document.getElementById('status-filter').addEventListener('input', () => { currentPage = 1; renderTable(); });
+    ['in-reg-no', 'in-owner-id'].forEach(id => document.getElementById(id).addEventListener('input', e => {
+      const pos = e.target.selectionStart; e.target.value = e.target.value.toUpperCase(); e.target.setSelectionRange(pos, pos);
+    }));
+
+    await loadProposals();
+  });
+
+  // ---------- Data ----------
+  async function loadProposals() {
+    const { data, error } = await supabaseClient.from('motor_proposals').select('*').order('created_at', { ascending: false });
+    if (error) {
+      console.error(error);
+      showToast('Unable to load prospects from Supabase.', 'error');
+      proposals = [];
+    } else {
+      proposals = data || [];
+    }
+    renderTable();
+    updateStats();
+  }
+
+  function filteredProposals() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    const st = document.getElementById('status-filter').value;
+    return proposals.filter(p => {
+      if (st && p.status !== st) return false;
+      if (!q) return true;
+      return [p.ifar_name, p.owner_name, p.vehicle_reg_no, p.reference_no].some(v => String(v || '').toLowerCase().includes(q));
+    });
+  }
+
+  function updateStats() {
+    document.getElementById('stat-total').textContent = proposals.length;
+    document.getElementById('stat-open').textContent = proposals.filter(p => p.status === 'OPEN').length;
+    document.getElementById('stat-submitted').textContent = proposals.filter(p => p.status === 'SUBMITTED').length;
+    document.getElementById('stat-closed').textContent = proposals.filter(p => p.status === 'CLOSED').length;
+  }
+
+  // ---------- Table ----------
+  function statusBadge(status) {
+    if (status === 'OPEN') return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap"><i class="fa-solid fa-hourglass-half mr-1.5 text-[10px]"></i>Open</span>`;
+    if (status === 'SUBMITTED') return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap"><i class="fa-solid fa-paper-plane mr-1.5 text-[10px]"></i>Sent to Sales</span>`;
+    return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"><i class="fa-solid fa-circle-check mr-1.5 text-[10px]"></i>Closed</span>`;
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('prospect-table-body');
+    const rows = filteredProposals();
+    const pageSize = parseInt(document.getElementById('page-size').value, 10) || 20;
+    const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+    currentPage = Math.min(Math.max(1, currentPage), totalPages);
+    const start = (currentPage - 1) * pageSize;
+    const pageRows = rows.slice(start, start + pageSize);
+
+    document.getElementById('range-info').textContent = rows.length ? `Showing ${start + 1}-${Math.min(start + pageSize, rows.length)} of ${rows.length}` : 'Showing 0 of 0';
+    document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('prev-page').disabled = currentPage <= 1;
+    document.getElementById('next-page').disabled = currentPage >= totalPages;
+
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-10 text-center text-slate-400">${proposals.length ? 'No prospects match your search.' : 'No prospects yet. Click "New Prospect" to begin.'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = pageRows.map(p => {
+      const attach = [];
+      if (p.pdf_path) attach.push(`<button onclick="openAttachment('${p.id}','pdf')" class="px-2 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-semibold hover:bg-rose-100"><i class="fa-solid fa-file-pdf mr-1"></i>Proposal</button>`);
+      if (p.payment_slip_path) attach.push(`<button onclick="openAttachment('${p.id}','slip')" class="px-2 py-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200 text-[11px] font-semibold hover:bg-slate-100"><i class="fa-solid fa-receipt mr-1"></i>Slip</button>`);
+
+      const actions = [];
+      actions.push(`<button onclick="openViewModal('${p.id}')" title="View" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-eye"></i></button>`);
+      if (p.status === 'OPEN') {
+        actions.push(`<button onclick="openShareModal('${p.id}')" title="Share link with IFAR" class="p-2 brand-navy hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-share-nodes"></i></button>`);
+        actions.push(`<button onclick="openProspectModal('${p.id}')" title="Edit" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-pen"></i></button>`);
+        actions.push(`<button onclick="deleteProspect('${p.id}')" title="Delete" class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg"><i class="fa-solid fa-trash"></i></button>`);
+      }
+      if (p.status === 'SUBMITTED') {
+        actions.push(`<button onclick="closeCase('${p.id}')" class="px-3 py-1.5 bg-brand-navy hover:opacity-90 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1"><i class="fa-solid fa-lock"></i>Close</button>`);
+      }
+
+      return `<tr class="hover:bg-slate-50/80">
+        <td class="px-5 py-4"><div class="font-semibold text-slate-800">${escapeHtml(p.ifar_name)}</div><div class="text-xs text-slate-400">${escapeHtml(p.ifar_phone)}</div></td>
+        <td class="px-5 py-4"><div class="font-bold text-slate-900">${escapeHtml(p.owner_name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(p.reference_no)}</div></td>
+        <td class="px-5 py-4"><div class="font-semibold text-slate-800 font-mono">${escapeHtml(p.vehicle_reg_no)}</div><div class="text-xs text-slate-400">${escapeHtml(p.vehicle_model)}</div></td>
+        <td class="px-5 py-4 text-xs text-slate-600 whitespace-nowrap">${fmtDate(p.submitted_at)}</td>
+        <td class="px-5 py-4 text-xs text-slate-600 whitespace-nowrap">${fmtDate(p.closed_at)}</td>
+        <td class="px-5 py-4">${statusBadge(p.status)}</td>
+        <td class="px-5 py-4"><div class="flex flex-wrap gap-1">${attach.join('') || '<span class="text-slate-300 text-xs">—</span>'}</div></td>
+        <td class="px-5 py-4 text-right whitespace-nowrap">${actions.join('')}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function deleteProspect(id) {
+    const p = proposals.find(x => x.id === id);
+    if (!p || p.status !== 'OPEN') return showToast('Only open cases can be deleted.', 'error');
+    if (!confirm(`Delete the prospect for ${p.owner_name} (${p.vehicle_reg_no})? This cannot be undone.`)) return;
+    const { data, error } = await supabaseClient.from('motor_proposals').delete().eq('id', id).eq('status', 'OPEN').select('id');
+    if (error || !data?.length) {
+      console.error(error);
+      showToast('Unable to delete. The case may have been submitted already.', 'error');
+    } else {
+      showToast('Prospect deleted.');
+    }
+    await loadProposals();
+  }
+
+  async function closeCase(id) {
+    const p = proposals.find(x => x.id === id);
+    if (!p || p.status !== 'SUBMITTED') return;
+    if (!confirm(`Mark ${p.reference_no} (${p.owner_name}) as closed?`)) return;
+    const now = new Date().toISOString();
+    const auditLog = [...(p.audit_log || []), { action: 'Case closed by admin', timestamp: now }];
+    const { error } = await supabaseClient.from('motor_proposals')
+      .update({ status: 'CLOSED', closed_at: now, updated_at: now, audit_log: auditLog })
+      .eq('id', id).eq('status', 'SUBMITTED');
+    if (error) { console.error(error); return showToast('Unable to close this case.', 'error'); }
+    showToast('Case closed.');
+    closeViewModal();
+    await loadProposals();
+  }
+
+  async function openAttachment(id, kind) {
+    const p = proposals.find(x => x.id === id);
+    const path = kind === 'pdf' ? p?.pdf_path : p?.payment_slip_path;
+    if (!path) return;
+    const win = window.open('', '_blank');   // open first so pop-up blockers allow it
+    const { data, error } = await supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(path, 300);
+    if (error || !data?.signedUrl) {
+      console.error(error);
+      if (win) win.close();
+      return showToast('Unable to open the attachment.', 'error');
+    }
+    if (win) win.location.href = data.signedUrl; else window.location.href = data.signedUrl;
+  }
+
+  // ---------- Prospect modal ----------
+  function blankFormState() {
+    return {
+      operators: OPERATORS.map(() => ({
+        checked: false, sum_covered: '', road_tax: '', admin_fee: DEFAULT_ADMIN_FEE, note: '',
+        options: Object.fromEntries(COVERAGE_OPTIONS.map(o => [o.code, { checked: false, takaful_price: '', road_tax: '' }]))
+      }))
+    };
+  }
+
+  function formStateFromQuotes(quotes) {
+    const st = blankFormState();
+    (quotes || []).forEach(q => {
+      const i = OPERATORS.findIndex(o => o.name === q.operator);
+      if (i < 0) return;
+      const op = st.operators[i];
+      op.checked = true;
+      op.sum_covered = q.sum_covered ?? '';
+      op.road_tax = q.road_tax ?? '';
+      op.admin_fee = q.admin_fee ?? DEFAULT_ADMIN_FEE;
+      op.note = q.note || '';
+      (q.options || []).forEach(o => {
+        if (!op.options[o.code]) return;
+        op.options[o.code] = { checked: true, takaful_price: o.takaful_price ?? '', road_tax: o.road_tax ?? op.road_tax };
+      });
+    });
+    return st;
+  }
+
+  const FIELD_MAP = {
+    'in-ifar-name': 'ifar_name', 'in-ifar-phone': 'ifar_phone', 'in-owner-name': 'owner_name', 'in-owner-id': 'owner_id_no',
+    'in-reg-no': 'vehicle_reg_no', 'in-vehicle-type': 'vehicle_type', 'in-vehicle-model': 'vehicle_model', 'in-engine-cc': 'engine_capacity',
+    'in-usage-type': 'usage_type', 'in-vehicle-address': 'vehicle_address', 'in-prospect-email': 'prospect_email',
+    'in-prospect-phone': 'prospect_phone', 'in-ncd': 'ncd', 'in-coverage-term': 'coverage_term'
+  };
+
+  function openProspectModal(id) {
+    const form = document.getElementById('form-prospect');
+    form.reset();
+    editingId = null;
+    formState = blankFormState();
+    document.getElementById('modal-title').textContent = 'New Prospect';
+    document.getElementById('save-prospect-label').textContent = 'Save & Create Link';
+
+    if (id) {
+      const p = proposals.find(x => x.id === id);
+      if (!p || p.status !== 'OPEN') return showToast('Only open cases can be edited.', 'error');
+      editingId = id;
+      Object.entries(FIELD_MAP).forEach(([el, col]) => { document.getElementById(el).value = p[col] ?? ''; });
+      formState = formStateFromQuotes(p.quotes);
+      document.getElementById('modal-title').textContent = `Edit Prospect · ${p.reference_no}`;
+      document.getElementById('save-prospect-label').textContent = 'Save Changes';
+    }
+    renderPart1();
+    renderPart2();
+    document.getElementById('modal-prospect').classList.remove('hidden');
+  }
+
+  function closeProspectModal() {
+    document.getElementById('modal-prospect').classList.add('hidden');
+  }
+
+  // Part 1: operator cards
+  function renderPart1() {
+    document.getElementById('part1-container').innerHTML = OPERATORS.map((op, i) => {
+      const on = formState.operators[i].checked;
+      return `<button type="button" onclick="toggleOperator(${i})"
+          class="text-left flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors ${on ? 'border-brand-navy bg-indigo-50/60' : 'border-slate-200 hover:border-slate-300 bg-white'}">
+        <span class="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 ${on ? 'bg-brand-navy border-brand-navy text-white' : 'border-slate-300'}">${on ? '<i class="fa-solid fa-check text-[10px]"></i>' : ''}</span>
+        <span class="w-1.5 h-8 rounded-full shrink-0" style="background:${op.color}"></span>
+        <span class="text-sm font-semibold text-slate-800">${escapeHtml(op.name)}</span>
+      </button>`;
+    }).join('');
+  }
+
+  function toggleOperator(i) {
+    formState.operators[i].checked = !formState.operators[i].checked;
+    renderPart1();
+    renderPart2();
+  }
+
+  // Part 2: per-operator pricing
+  function renderPart2() {
+    const container = document.getElementById('part2-container');
+    const active = OPERATORS.map((op, i) => ({ op, i })).filter(x => formState.operators[x.i].checked);
+    if (!active.length) {
+      container.innerHTML = `<div class="border-2 border-dashed border-slate-200 rounded-xl px-4 py-8 text-center text-sm text-slate-400">
+        <i class="fa-solid fa-lock mr-1"></i> Select at least one Takaful operator in Part 1 to continue.</div>`;
+      return;
+    }
+
+    container.innerHTML = active.map(({ op, i }) => {
+      const st = formState.operators[i];
+      const pills = COVERAGE_OPTIONS.map((o, n) => {
+        const on = st.options[o.code].checked;
+        return `<button type="button" onclick="toggleOption(${i},'${o.code}')"
+            class="flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium text-left transition-colors ${on ? 'border-brand-navy bg-brand-navy text-white' : 'border-slate-300 text-slate-700 hover:border-slate-400 bg-white'}">
+          <span class="w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center shrink-0 ${on ? 'border-white' : 'border-slate-400'}">${on ? '<span class="w-1.5 h-1.5 rounded-full bg-white"></span>' : ''}</span>
+          <span>${n + 1}. ${escapeHtml(o.name)}</span>
+        </button>`;
+      }).join('');
+
+      const chosen = COVERAGE_OPTIONS.filter(o => st.options[o.code].checked);
+      const rows = chosen.map((o, n) => {
+        const r = st.options[o.code];
+        return `<tr class="border-t border-slate-100">
+          <td class="px-3 py-2 text-xs text-slate-400">${n + 1}</td>
+          <td class="px-3 py-2 text-xs font-semibold text-slate-700">${escapeHtml(o.name)}</td>
+          <td class="px-2 py-1.5"><input type="number" min="0" step="0.01" value="${escapeHtml(r.takaful_price)}" placeholder="0.00"
+              oninput="setOptField(${i},'${o.code}','takaful_price',this.value)" class="field money !py-1.5 !text-xs w-28"></td>
+          <td class="px-2 py-1.5"><input type="number" min="0" step="0.01" value="${escapeHtml(r.road_tax)}" placeholder="0.00" data-roadtax="${i}" data-code="${o.code}"
+              oninput="setOptField(${i},'${o.code}','road_tax',this.value)" class="field money !py-1.5 !text-xs w-24"></td>
+          <td class="px-3 py-2 text-xs money text-slate-600" data-adminfee="${i}">${fmtMoney(st.admin_fee)}</td>
+          <td class="px-3 py-2 text-xs money font-bold text-slate-900" id="total-${i}-${o.code}">${fmtMoney(optionTotal(st, o.code))}</td>
+        </tr>`;
+      }).join('');
+
+      return `<div class="border border-slate-200 rounded-2xl overflow-hidden">
+        <div class="flex items-center gap-3 px-4 py-3" style="background:${op.tint}">
+          <span class="w-1.5 h-7 rounded-full" style="background:${op.color}"></span>
+          <p class="font-bold text-sm text-slate-900">${escapeHtml(op.name)}</p>
+        </div>
+        <div class="p-4 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="field-label">Sum Covered (RM) *</label>
+              <input type="number" min="0" step="0.01" value="${escapeHtml(st.sum_covered)}" placeholder="e.g. 94900" oninput="setOpField(${i},'sum_covered',this.value)" class="field money"></div>
+            <div><label class="field-label">Road Tax Amount (RM)</label>
+              <input type="number" min="0" step="0.01" value="${escapeHtml(st.road_tax)}" placeholder="e.g. 359.40" oninput="setOpField(${i},'road_tax',this.value)" class="field money"></div>
+            <div><label class="field-label">Admin Amount (RM)</label>
+              <input type="number" min="0" step="0.01" value="${escapeHtml(st.admin_fee)}" oninput="setOpField(${i},'admin_fee',this.value)" class="field money"></div>
+          </div>
+          <div>
+            <p class="field-label">Coverage options (select one or more)</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${pills}</div>
+          </div>
+          ${chosen.length ? `
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <div class="px-3 py-2 bg-slate-50 text-xs text-slate-600 flex flex-wrap gap-x-6 gap-y-1 border-b border-slate-200">
+              <span>Takaful Operator: <b class="text-slate-800">${escapeHtml(op.name)}</b></span>
+              <span>Sum Covered: <b class="text-slate-800" id="sc-label-${i}">${st.sum_covered ? 'RM ' + fmtMoney(st.sum_covered) : '—'}</b></span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[620px]">
+                <thead class="text-[11px] text-slate-500 bg-white">
+                  <tr><th class="px-3 py-2 text-left font-semibold">Option #</th><th class="px-3 py-2 text-left font-semibold">Option Name</th>
+                  <th class="px-3 py-2 text-left font-semibold">Takaful Price</th><th class="px-3 py-2 text-left font-semibold">Road Tax</th>
+                  <th class="px-3 py-2 text-right font-semibold">Admin Fee</th><th class="px-3 py-2 text-right font-semibold">Total</th></tr>
+                </thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+          </div>` : `<p class="text-xs text-slate-400">Choose coverage options above to fill in the prices.</p>`}
+          <div><label class="field-label">Benefit note (optional, shown under the table)</label>
+            <input value="${escapeHtml(st.note)}" placeholder="e.g. Free towing 150 km" oninput="setOpField(${i},'note',this.value)" class="field"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function toggleOption(i, code) {
+    const st = formState.operators[i];
+    const opt = st.options[code];
+    opt.checked = !opt.checked;
+    if (opt.checked && (opt.road_tax === '' || opt.road_tax == null)) opt.road_tax = st.road_tax;
+    renderPart2();
+  }
+
+  function setOpField(i, field, value) {
+    const st = formState.operators[i];
+    st[field] = value;
+    if (field === 'road_tax') {
+      // Road tax box fills every option row of this operator
+      Object.values(st.options).forEach(o => { o.road_tax = value; });
+      document.querySelectorAll(`[data-roadtax="${i}"]`).forEach(inp => { inp.value = value; });
+    }
+    if (field === 'admin_fee') {
+      document.querySelectorAll(`[data-adminfee="${i}"]`).forEach(td => { td.textContent = fmtMoney(value); });
+    }
+    if (field === 'sum_covered') {
+      const lbl = document.getElementById(`sc-label-${i}`);
+      if (lbl) lbl.textContent = value ? 'RM ' + fmtMoney(value) : '—';
+    }
+    refreshTotals(i);
+  }
+
+  function setOptField(i, code, field, value) {
+    formState.operators[i].options[code][field] = value;
+    refreshTotals(i);
+  }
+
+  function optionTotal(st, code) {
+    const o = st.options[code];
+    return num(o.takaful_price) + num(o.road_tax) + num(st.admin_fee);
+  }
+
+  function refreshTotals(i) {
+    const st = formState.operators[i];
+    COVERAGE_OPTIONS.forEach(o => {
+      const cell = document.getElementById(`total-${i}-${o.code}`);
+      if (cell) cell.textContent = fmtMoney(optionTotal(st, o.code));
+    });
+  }
+
+  function buildQuotes() {
+    const quotes = [];
+    const errors = [];
+    OPERATORS.forEach((op, i) => {
+      const st = formState.operators[i];
+      if (!st.checked) return;
+      const chosen = COVERAGE_OPTIONS.filter(o => st.options[o.code].checked);
+      if (!(num(st.sum_covered) > 0)) errors.push(`${op.short}: enter the Sum Covered.`);
+      if (!chosen.length) errors.push(`${op.short}: select at least one coverage option.`);
+      chosen.forEach(o => {
+        if (!(num(st.options[o.code].takaful_price) > 0)) errors.push(`${op.short}: enter the Takaful Price for "${o.name}".`);
+      });
+      quotes.push({
+        operator: op.name,
+        sum_covered: round2(num(st.sum_covered)),
+        road_tax: round2(num(st.road_tax)),
+        admin_fee: round2(num(st.admin_fee)),
+        note: (st.note || '').trim(),
+        options: chosen.map(o => ({
+          code: o.code, name: o.name,
+          takaful_price: round2(num(st.options[o.code].takaful_price)),
+          road_tax: round2(num(st.options[o.code].road_tax)),
+          admin_fee: round2(num(st.admin_fee))
+        }))
+      });
+    });
+    if (!quotes.length) errors.unshift('Select at least one Takaful operator in Part 1.');
+    return { quotes, errors };
+  }
+
+  async function handleSaveProspect(e) {
+    e.preventDefault();
+    const record = {};
+    Object.entries(FIELD_MAP).forEach(([el, col]) => { record[col] = document.getElementById(el).value.trim() || null; });
+
+    const required = [['ifar_name', 'IFAR Name'], ['ifar_phone', 'IFAR Phone Number'], ['owner_name', 'Name of Vehicle Owner'],
+      ['owner_id_no', 'Identification Number'], ['vehicle_reg_no', 'Vehicle Registration Number'], ['vehicle_type', 'Type of Vehicle'],
+      ['vehicle_model', 'Vehicle Brand and Model'], ['usage_type', 'Vehicle Usage Type']];
+    const missing = required.filter(([k]) => !record[k]).map(([, label]) => label);
+    if (missing.length) return showToast(`Please fill in: ${missing.join(', ')}.`, 'error');
+    if (record.prospect_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.prospect_email)) return showToast('Prospect email address looks invalid.', 'error');
+
+    const { quotes, errors } = buildQuotes();
+    if (errors.length) return showToast(errors[0], 'error');
+    record.quotes = quotes;
+
+    const btn = document.getElementById('save-prospect-btn');
+    btn.disabled = true;
+    const now = new Date().toISOString();
+    let result;
+    if (editingId) {
+      const p = proposals.find(x => x.id === editingId);
+      record.updated_at = now;
+      record.audit_log = [...(p?.audit_log || []), { action: 'Proposal edited by admin', timestamp: now }];
+      result = await supabaseClient.from('motor_proposals').update(record).eq('id', editingId).eq('status', 'OPEN').select('*').single();
+    } else {
+      record.audit_log = [{ action: 'Prospect created by admin', timestamp: now }];
+      result = await supabaseClient.from('motor_proposals').insert(record).select('*').single();
+    }
+    btn.disabled = false;
+
+    if (result.error) {
+      console.error(result.error);
+      return showToast(editingId ? 'Unable to save. The case may have been submitted already.' : 'Unable to save prospect to Supabase.', 'error');
+    }
+    const wasEditing = !!editingId;
+    closeProspectModal();
+    await loadProposals();
+    showToast(wasEditing ? 'Changes saved.' : 'Prospect created.');
+    if (!wasEditing) openShareModal(result.data.id);
+  }
+
+  // ---------- Share modal ----------
+  function shareUrlFor(p) {
+    return new URL(`${PUBLIC_PAGE}?token=${p.public_token}`, window.location.href).href;
+  }
+
+  function openShareModal(id) {
+    shareTarget = proposals.find(x => x.id === id);
+    if (!shareTarget) return;
+    document.getElementById('share-link-input').value = shareUrlFor(shareTarget);
+    document.getElementById('share-subtitle').textContent = `Share this link with ${shareTarget.ifar_name}. The IFAR or client selects one option and uploads the payment slip.`;
+    document.getElementById('whatsapp-share-label').textContent = `Share with ${shareTarget.ifar_name} on WhatsApp`;
+    document.getElementById('modal-share').classList.remove('hidden');
+  }
+
+  function closeShareModal() { document.getElementById('modal-share').classList.add('hidden'); }
+
+  function copyShareLink() {
+    const input = document.getElementById('share-link-input');
+    input.select();
+    navigator.clipboard.writeText(input.value).then(() => showToast('Link copied to clipboard!'));
+  }
+
+  function whatsappShareLink() {
+    if (!shareTarget) return;
+    let digits = String(shareTarget.ifar_phone || '').replace(/\D/g, '');
+    if (digits.startsWith('0')) digits = '6' + digits;       // Malaysian local → 60…
+    const msg = `Salam ${shareTarget.ifar_name}, here is the Motor Takaful Value Proposal for ${shareTarget.owner_name} (${shareTarget.vehicle_reg_no}):\n${shareUrlFor(shareTarget)}`;
+    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
+  }
+
+  function previewShareLink() {
+    const url = document.getElementById('share-link-input').value;
+    if (url) window.open(url, '_blank', 'noopener');
+  }
+
+  // ---------- View modal ----------
+  function openViewModal(id) {
+    const p = proposals.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('view-ref').textContent = `${p.reference_no}  |  Created ${fmtDate(p.created_at)}`;
+    const sel = p.selected_quote;
+    const detail = [
+      ['IFAR', `${p.ifar_name} (${p.ifar_phone})`], ['Status', p.status === 'SUBMITTED' ? 'Sent to Sales Dept' : p.status === 'OPEN' ? 'Open' : 'Closed'],
+      ['Name of Vehicle Owner', p.owner_name], ['IC / Passport', p.owner_id_no],
+      ['Vehicle Reg. No.', p.vehicle_reg_no], ['Type of Vehicle', p.vehicle_type],
+      ['Brand & Model', p.vehicle_model], ['Engine Capacity', p.engine_capacity],
+      ['Usage Type', p.usage_type], ['NCD', p.ncd],
+      ['Coverage Term', p.coverage_term], ['Email', p.prospect_email],
+      ['Phone', p.prospect_phone], ['Vehicle Address', p.vehicle_address]
+    ].map(([k, v]) => `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3"><p class="text-[11px] text-slate-400 font-semibold">${k}</p><p class="text-sm font-semibold text-slate-800 mt-0.5 break-words">${escapeHtml(v || '—')}</p></div>`).join('');
+
+    const tables = (p.quotes || []).map(q => {
+      const op = OPERATORS.find(o => o.name === q.operator) || { color: '#64748b', tint: '#f1f5f9' };
+      const rows = (q.options || []).map((o, n) => {
+        const isSel = sel && sel.operator === q.operator && sel.option_code === o.code;
+        const total = num(o.takaful_price) + num(o.road_tax) + num(o.admin_fee);
+        return `<tr class="border-t border-slate-100 ${isSel ? 'bg-amber-50' : ''}">
+          <td class="px-3 py-2 text-xs text-slate-400">${n + 1}</td>
+          <td class="px-3 py-2 text-xs font-semibold text-slate-700">${escapeHtml(o.name)} ${isSel ? '<span class="ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-[10px] text-slate-900 font-bold">SELECTED</span>' : ''}</td>
+          <td class="px-3 py-2 text-xs money">${fmtMoney(o.takaful_price)}</td>
+          <td class="px-3 py-2 text-xs money">${fmtMoney(o.road_tax)}</td>
+          <td class="px-3 py-2 text-xs money">${fmtMoney(o.admin_fee)}</td>
+          <td class="px-3 py-2 text-xs money font-bold">${fmtMoney(total)}</td></tr>`;
+      }).join('');
+      return `<div class="border border-slate-200 rounded-xl overflow-hidden">
+        <div class="flex justify-between items-center px-4 py-2.5" style="background:${op.tint}">
+          <span class="font-bold text-sm text-slate-900">${escapeHtml(q.operator)}</span>
+          <span class="text-xs text-slate-600">Sum Covered: <b>RM ${fmtMoney(q.sum_covered)}</b></span>
+        </div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[560px]">
+          <thead class="text-[11px] text-slate-500"><tr><th class="px-3 py-2 text-left">#</th><th class="px-3 py-2 text-left">Option</th><th class="px-3 py-2 text-right">Takaful</th><th class="px-3 py-2 text-right">Road Tax</th><th class="px-3 py-2 text-right">Admin Fee</th><th class="px-3 py-2 text-right">Total</th></tr></thead>
+          <tbody>${rows}</tbody></table></div>
+        ${q.note ? `<p class="px-4 py-2 text-[11px] font-semibold text-slate-600 border-t border-slate-100 text-center">${escapeHtml(q.note)}</p>` : ''}
+      </div>`;
+    }).join('');
+
+    const payment = p.status === 'OPEN' ? '' : `
+      <div class="border border-slate-200 rounded-xl p-4 space-y-3">
+        <p class="text-sm font-bold text-slate-800">Payment</p>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+          <div><p class="text-[11px] text-slate-400 font-semibold">Payment Amount</p><p class="font-semibold">RM ${fmtMoney(p.payment_amount)}</p>
+            ${sel && Math.abs(num(p.payment_amount) - num(sel.total)) > 0.009 ? `<p class="text-[11px] text-rose-600 mt-0.5">Differs from selected total RM ${fmtMoney(sel.total)}</p>` : ''}</div>
+          <div><p class="text-[11px] text-slate-400 font-semibold">Payment Reference No.</p><p class="font-semibold break-words">${escapeHtml(p.payment_reference || '—')}</p></div>
+          <div><p class="text-[11px] text-slate-400 font-semibold">Sent to Sales Dept</p><p class="font-semibold">${fmtDateTime(p.submitted_at)}</p></div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          ${p.pdf_path ? `<button onclick="openAttachment('${p.id}','pdf')" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold"><i class="fa-solid fa-file-pdf mr-1"></i>Proposal &amp; Payment PDF</button>` : ''}
+          ${p.payment_slip_path ? `<button onclick="openAttachment('${p.id}','slip')" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold"><i class="fa-solid fa-receipt mr-1"></i>Original Payment Slip</button>` : ''}
+          ${p.status === 'SUBMITTED' ? `<button onclick="closeCase('${p.id}')" class="px-3 py-2 rounded-lg bg-brand-navy text-white text-xs font-semibold ml-auto"><i class="fa-solid fa-lock mr-1"></i>Close Case</button>` : ''}
+        </div>
+      </div>`;
+
+    document.getElementById('view-body').innerHTML = `
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${detail}</div>
+      <div class="space-y-4">${tables}</div>
+      ${payment}`;
+    document.getElementById('modal-view').classList.remove('hidden');
+  }
+
+  function closeViewModal() { document.getElementById('modal-view').classList.add('hidden'); }
+
+  // ---------- Utilities ----------
+  function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
+  function round2(n) { return Math.round(n * 100) / 100; }
+  function fmtMoney(v) { return num(v).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function fmtDate(v) { return v ? new Date(v).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' }) : '<span class="text-slate-300">—</span>'; }
+  function fmtDateTime(v) { return v ? new Date(v).toLocaleString('en-MY', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'; }
+
+  function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `${type === 'error' ? 'bg-rose-600' : 'bg-slate-900'} text-white px-4 py-3 rounded-xl shadow-xl text-xs font-medium flex items-center space-x-2 transition-all opacity-0 translate-y-2`;
+    toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i><span>${escapeHtml(message)}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
+    setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3800);
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+  }
+</script>
+</body>
+</html>
