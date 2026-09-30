@@ -173,7 +173,21 @@
             <div class="sm:col-span-2"><label class="field-label">Vehicle Address</label><textarea id="in-vehicle-address" rows="2" class="field" placeholder="Address where the vehicle is kept"></textarea></div>
             <div><label class="field-label">Prospect Email Address</label><input id="in-prospect-email" type="email" class="field" placeholder="e.g. fatehah@example.com"></div>
             <div><label class="field-label">Prospect Phone Number</label><input id="in-prospect-phone" type="tel" class="field" placeholder="e.g. 013-456 7890"></div>
-            <div class="sm:col-span-2"><label class="field-label">Vehicle Coverage Term</label><input id="in-coverage-term" class="field" placeholder="e.g. 18/12/2026 – 17/12/2027"></div>
+            <div class="sm:col-span-2">
+              <label class="field-label">Vehicle Coverage Term</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <span class="block text-[11px] text-slate-500 mb-1">From</span>
+                  <input id="in-cov-from" type="date" class="field cursor-pointer" onclick="openDatePicker(this)" onchange="onCoverageFromChange()">
+                </div>
+                <div>
+                  <span class="block text-[11px] text-slate-500 mb-1">To</span>
+                  <input id="in-cov-to" type="date" class="field cursor-pointer" onclick="openDatePicker(this)" onchange="updateCoverageTerm()">
+                </div>
+              </div>
+              <input id="in-coverage-term" type="hidden">
+              <p class="text-[11px] text-slate-400 mt-1">Picking the start date fills the end date one year later. You can still change it.</p>
+            </div>
           </div>
         </section>
 
@@ -453,6 +467,7 @@
     form.reset();
     editingId = null;
     formState = blankFormState();
+    loadCoverageTerm('');
     document.getElementById('modal-title').textContent = 'New Prospect';
     document.getElementById('save-prospect-label').textContent = 'Save & Create Link';
 
@@ -461,6 +476,7 @@
       if (!p || p.status !== 'OPEN') return showToast('Only open cases can be edited.', 'error');
       editingId = id;
       Object.entries(FIELD_MAP).forEach(([el, col]) => { document.getElementById(el).value = p[col] ?? ''; });
+      loadCoverageTerm(p.coverage_term);
       formState = formStateFromQuotes(p.quotes);
       document.getElementById('modal-title').textContent = `Edit Prospect · ${p.reference_no}`;
       document.getElementById('save-prospect-label').textContent = 'Save Changes';
@@ -657,6 +673,10 @@
     if (missing.length) return showToast(`Please fill in: ${missing.join(', ')}.`, 'error');
     if (record.prospect_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.prospect_email)) return showToast('Prospect email address looks invalid.', 'error');
 
+    const covFrom = document.getElementById('in-cov-from').value, covTo = document.getElementById('in-cov-to').value;
+    if ((covFrom && !covTo) || (!covFrom && covTo)) return showToast('Please pick both the coverage start and end dates.', 'error');
+    if (covFrom && covTo && covTo <= covFrom) return showToast('Coverage end date must be after the start date.', 'error');
+
     const { quotes, errors } = buildQuotes();
     if (errors.length) return showToast(errors[0], 'error');
     record.quotes = quotes;
@@ -787,6 +807,47 @@
   }
 
   function closeViewModal() { document.getElementById('modal-view').classList.add('hidden'); }
+
+
+  // ---------- Coverage term date pickers ----------
+  // Stored in coverage_term as "DD/MM/YYYY – DD/MM/YYYY" so the link page and PDF show it as before.
+  function openDatePicker(input) {
+    try { if (input.showPicker) input.showPicker(); } catch (_) { /* browser opens it on its own */ }
+  }
+  function isoToDmy(iso) {
+    if (!iso) return '';
+    const [y, m, d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function dmyToIso(dmy) {
+    const m = String(dmy || '').trim().match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
+    return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : '';
+  }
+  function onCoverageFromChange() {
+    const from = document.getElementById('in-cov-from').value;
+    if (from) {
+      const d = new Date(from + 'T00:00:00');
+      d.setFullYear(d.getFullYear() + 1);
+      d.setDate(d.getDate() - 1);
+      const pad = n => String(n).padStart(2, '0');
+      document.getElementById('in-cov-to').value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    }
+    updateCoverageTerm();
+  }
+  function updateCoverageTerm() {
+    const from = document.getElementById('in-cov-from').value;
+    const to = document.getElementById('in-cov-to').value;
+    document.getElementById('in-cov-to').min = from || '';
+    document.getElementById('in-coverage-term').value = from && to ? `${isoToDmy(from)} – ${isoToDmy(to)}` : '';
+  }
+  function loadCoverageTerm(text) {
+    const parts = String(text || '').split(/\s*[–—-]\s+|\s+[–—-]\s*|\s+to\s+/i);
+    document.getElementById('in-cov-from').value = dmyToIso(parts[0]);
+    document.getElementById('in-cov-to').value = dmyToIso(parts[1]);
+    updateCoverageTerm();
+    // keep any older free-text value that could not be read as dates
+    if (!document.getElementById('in-coverage-term').value) document.getElementById('in-coverage-term').value = text || '';
+  }
 
   // ---------- Utilities ----------
   function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
