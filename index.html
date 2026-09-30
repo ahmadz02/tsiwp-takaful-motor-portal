@@ -840,6 +840,7 @@
         <p class="text-sm font-bold text-slate-800">Payment</p>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
           <div><p class="text-[11px] text-slate-400 font-semibold">Payment Amount</p><p class="font-semibold">RM ${fmtMoney(p.payment_amount)}</p>
+            ${sel && sel.exclude_road_tax ? `<p class="text-[11px] font-semibold text-amber-700 mt-0.5"><i class="fa-solid fa-circle-info mr-1"></i>Road Tax excluded (Takaful Price only)</p>` : ''}
             ${sel && Math.abs(num(p.payment_amount) - num(sel.total)) > 0.009 ? `<p class="text-[11px] text-rose-600 mt-0.5">Differs from selected total RM ${fmtMoney(sel.total)}</p>` : ''}</div>
           <div><p class="text-[11px] text-slate-400 font-semibold">Payment Reference No.</p><p class="font-semibold break-words">${escapeHtml(p.payment_reference || '—')}</p></div>
           <div><p class="text-[11px] text-slate-400 font-semibold">Sent to Sales Dept</p><p class="font-semibold">${fmtDateTime(p.submitted_at)}</p></div>

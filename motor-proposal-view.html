@@ -76,6 +76,7 @@ let proposal = null;
 let selection = null;          // { qi, code }
 let slipFile = null;
 let amountAutoFilled = true;
+let excludeRoadTax = false;   // tick box under the selected option
 let lastPdfBlob = null;
 let lastPdfName = '';
 
@@ -217,10 +218,18 @@ function renderSummary() {
         <p class="text-[11px] font-bold text-amber-700">Selected option</p>
         <p class="text-sm font-bold text-slate-900">${escapeHtml(s.operator)}</p>
         <p class="text-xs text-slate-600">${escapeHtml(s.option_name)}, Sum Covered RM${fmtMoney(s.sum_covered)}</p>
+        ${isLocked()
+          ? (s.exclude_road_tax ? `<p class="mt-2 text-xs font-semibold text-amber-800"><i class="fa-solid fa-square-check mr-1"></i>Road Tax excluded</p>` : '')
+          : `<label class="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+               <input id="exclude-roadtax" type="checkbox" ${s.exclude_road_tax ? 'checked' : ''} onchange="toggleExcludeRoadTax(this.checked)"
+                 class="w-4 h-4 rounded border-slate-400 accent-[#212F6E] cursor-pointer">
+               Exclude Road Tax
+             </label>`}
       </div>
       <div class="sm:text-right">
-        <p class="text-[11px] text-slate-500">Total payable</p>
+        <p class="text-[11px] text-slate-500">${s.exclude_road_tax ? 'Takaful price payable' : 'Total payable'}</p>
         <p class="text-2xl font-extrabold text-slate-900 tabular-nums">RM${fmtMoney(s.total)}</p>
+        ${s.exclude_road_tax ? `<p class="text-[11px] text-slate-400 line-through tabular-nums">RM${fmtMoney(s.full_total)}</p>` : ''}
       </div>
     </div>`;
 }
@@ -302,6 +311,7 @@ function selectOption(qi, code) {
 function cancelSelection() {
   if (isLocked()) return;
   selection = null;
+  excludeRoadTax = false;
   refreshAfterSelection();
 }
 
@@ -316,16 +326,28 @@ function refreshAfterSelection() {
   if (ref != null) document.getElementById('pay-ref').value = ref;
 }
 
+function toggleExcludeRoadTax(checked) {
+  if (isLocked()) return;
+  excludeRoadTax = checked;
+  renderSummary();
+  const s = currentSelectionDetail();
+  const amt = document.getElementById('pay-amount');
+  if (s && amt && amountAutoFilled) amt.value = s.total.toFixed(2);
+}
+
 function currentSelectionDetail() {
   if (!selection) return null;
   const q = proposal.quotes[selection.qi];
   const o = q && (q.options || []).find(x => x.code === selection.code);
   if (!o) return null;
+  const exclude = isLocked() ? !!(proposal.selected_quote && proposal.selected_quote.exclude_road_tax) : excludeRoadTax;
   return {
     operator: q.operator, sum_covered: num(q.sum_covered), note: q.note || '',
     option_code: o.code, option_name: o.name,
     takaful_price: num(o.takaful_price), road_tax: num(o.road_tax), admin_fee: num(o.admin_fee),
-    total: optTotal(o)
+    exclude_road_tax: exclude,
+    full_total: optTotal(o),
+    total: exclude ? num(o.takaful_price) : optTotal(o)   // excluded → Takaful Price only
   };
 }
 
@@ -405,7 +427,8 @@ async function sendToSales() {
     const { data, error } = await supabaseClient.rpc('submit_motor_proposal', {
       p_token: token, p_operator: s.operator, p_option_code: s.option_code,
       p_payment_amount: amount, p_payment_reference: ref,
-      p_slip_path: slipPath, p_slip_name: slipFile.name, p_pdf_path: pdfPath
+      p_slip_path: slipPath, p_slip_name: slipFile.name, p_pdf_path: pdfPath,
+      p_exclude_road_tax: s.exclude_road_tax
     });
     if (error) throw new Error(error.message || 'Unable to send to Sales Dept.');
     if (!data) return showFatal('Already submitted', 'This proposal has already been sent to the Sales Department.');
@@ -575,9 +598,11 @@ async function buildProposalPdf(sel, pay) {
   pdf.text(sel.operator, M + 10, y + 30);
   pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5);
   pdf.text(`${sel.option_name}   |   Sum Covered ${money(sel.sum_covered)}`, M + 10, y + 43);
-  pdf.text(`Takaful ${money(sel.takaful_price)} + Road Tax ${money(sel.road_tax)} + Admin Fee ${money(sel.admin_fee)}`, M + 10, y + 56);
+  pdf.text(sel.exclude_road_tax
+    ? `Takaful Price only (Road Tax excluded; full total with road tax & admin fee: ${money(sel.full_total)})`
+    : `Takaful ${money(sel.takaful_price)} + Road Tax ${money(sel.road_tax)} + Admin Fee ${money(sel.admin_fee)}`, M + 10, y + 56);
   pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(90);
-  pdf.text('TOTAL PAYABLE', W - M - 10, y + 30, { align: 'right' });
+  pdf.text(sel.exclude_road_tax ? 'PAYABLE (EXCL. ROAD TAX)' : 'TOTAL PAYABLE', W - M - 10, y + 30, { align: 'right' });
   pdf.setTextColor(0); pdf.setFontSize(16);
   pdf.text(money(sel.total), W - M - 10, y + 50, { align: 'right' });
   y += 70;
@@ -610,7 +635,7 @@ async function buildProposalPdf(sel, pay) {
     y += 14;
   };
   kv([['Bank', PAYMENT_INFO.bank], ['Account No.', PAYMENT_INFO.account], ['Account Name', PAYMENT_INFO.name], ['Reference', PAYMENT_INFO.reference]], 'PAYMENT INSTRUCTION');
-  kv([['Payment Amount', money(pay.amount)], ['Total Payable', money(sel.total)], ['Payment Reference No.', pay.ref],
+  kv([['Payment Amount', money(pay.amount)], [sel.exclude_road_tax ? 'Payable (excl. Road Tax)' : 'Total Payable', money(sel.total)], ['Payment Reference No.', pay.ref],
       ['Payment Slip File', slipFile.name], ['Submitted', pay.submittedAt.toLocaleString('en-MY')]], 'PAYMENT DETAILS');
   if (Math.abs(pay.amount - sel.total) > 0.009) {
     pdf.setTextColor(190, 18, 60); pdf.setFontSize(8);
