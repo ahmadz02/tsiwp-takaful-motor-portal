@@ -180,14 +180,14 @@
             <div><label class="field-label">Identification Number (IC / Passport) *</label><input id="in-owner-id" class="field uppercase" placeholder="e.g. 901218-08-5392"></div>
             <div><label class="field-label">Vehicle Registration Number *</label><input id="in-reg-no" class="field uppercase" placeholder="e.g. AML3127"></div>
             <div><label class="field-label">Type of Vehicle *</label>
-              <select id="in-vehicle-type" class="field">
-                <option value="">Select type</option><option>Sedan/Saloon</option><option>Lorry/Pick Up</option><option>SUV</option><option>MPV</option><option>Motorcycle</option>
+              <select id="in-vehicle-type" class="field" translate="no">
+                <option value="">Select type</option><option value="Sedan">Sedan</option><option value="SUV">SUV</option><option value="MPV">MPV</option><option value="Motorcycle">Motorcycle</option>
               </select>
             </div>
             <div><label class="field-label">Vehicle Brand and Model *</label><input id="in-vehicle-model" class="field" placeholder="e.g. Toyota Corolla Cross 1.8V"></div>
             <div><label class="field-label">Vehicle Engine Capacity</label><input id="in-engine-cc" class="field" placeholder="e.g. 1798 cc"></div>
             <div><label class="field-label">Vehicle Usage Type *</label>
-              <select id="in-usage-type" class="field"><option value="">Select usage</option><option>Personal</option><option>Company</option></select>
+              <select id="in-usage-type" class="field" translate="no"><option value="">Select usage</option><option value="Personal">Personal</option><option value="Company">Company</option></select>
             </div>
             <div><label class="field-label">NCD</label><input id="in-ncd" class="field" placeholder="e.g. 38.33%"></div>
             <div class="sm:col-span-2"><label class="field-label">Vehicle Address</label><textarea id="in-vehicle-address" rows="2" class="field" placeholder="Address where the vehicle is kept"></textarea></div>
@@ -527,7 +527,14 @@
       const p = proposals.find(x => x.id === id);
       if (!p || p.status !== 'OPEN') return showToast('Only open cases can be edited.', 'error');
       editingId = id;
-      Object.entries(FIELD_MAP).forEach(([el, col]) => { document.getElementById(el).value = p[col] ?? ''; });
+      Object.entries(FIELD_MAP).forEach(([el, col]) => {
+        const input = document.getElementById(el);
+        const val = p[col] ?? '';
+        if (input.tagName === 'SELECT' && val && ![...input.options].some(o => o.value === val)) {
+          input.add(new Option(val, val));            // keep an older/unlisted value visible
+        }
+        input.value = val;
+      });
       loadCoverageTerm(p.coverage_term);
       formState = formStateFromQuotes(p.quotes);
       document.getElementById('modal-title').textContent = `Edit Prospect · ${p.reference_no}`;
@@ -741,7 +748,14 @@
       const p = proposals.find(x => x.id === editingId);
       record.updated_at = now;
       record.audit_log = [...(p?.audit_log || []), { action: 'Proposal edited by admin', timestamp: now }];
-      result = await supabaseClient.from('motor_proposals').update(record).eq('id', editingId).eq('status', 'OPEN').select('*').single();
+      result = await supabaseClient.from('motor_proposals').update(record).eq('id', editingId).eq('status', 'OPEN').select('*');
+      if (!result.error) {
+        if (!result.data || !result.data.length) {
+          btn.disabled = false;
+          return showToast('Not saved: this case is no longer Open (already sent to Sales) or was deleted. Refresh the list.', 'error');
+        }
+        result.data = result.data[0];
+      }
     } else {
       record.audit_log = [{ action: 'Prospect created by admin', timestamp: now }];
       result = await supabaseClient.from('motor_proposals').insert(record).select('*').single();
@@ -750,7 +764,7 @@
 
     if (result.error) {
       console.error(result.error);
-      return showToast(editingId ? 'Unable to save. The case may have been submitted already.' : 'Unable to save prospect to Supabase.', 'error');
+      return showToast(`Unable to save: ${supabaseErrorText(result.error)}`, 'error');
     }
     const wasEditing = !!editingId;
     closeProspectModal();
@@ -902,6 +916,16 @@
     if (!document.getElementById('in-coverage-term').value) document.getElementById('in-coverage-term').value = text || '';
   }
 
+  // Turn a Supabase/PostgREST error into something readable (and keep the technical part for support)
+  function supabaseErrorText(err) {
+    if (!err) return 'Unknown error.';
+    const msg = err.message || String(err);
+    if (err.code === '23514' || /check constraint/i.test(msg)) return `a value was rejected by the database (${msg}). Run motor-proposal-fix.sql.`;
+    if (err.code === '42501' || /row-level security|permission denied/i.test(msg)) return `permission denied by the database (${msg}). Run motor-proposal-fix.sql.`;
+    if (err.code === 'PGRST204' || /schema cache|column/i.test(msg)) return `the database table is missing a column (${msg}). Run motor-proposal-fix.sql.`;
+    return msg + (err.code ? ` [${err.code}]` : '');
+  }
+
   // ---------- Utilities ----------
   function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
   function round2(n) { return Math.round(n * 100) / 100; }
@@ -916,7 +940,7 @@
     toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check'}"></i><span>${escapeHtml(message)}</span>`;
     container.appendChild(toast);
     setTimeout(() => toast.classList.remove('opacity-0', 'translate-y-2'), 10);
-    setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, 3800);
+    setTimeout(() => { toast.classList.add('opacity-0'); setTimeout(() => toast.remove(), 300); }, type === 'error' ? 9000 : 3800);
   }
 
   function escapeHtml(value) {
