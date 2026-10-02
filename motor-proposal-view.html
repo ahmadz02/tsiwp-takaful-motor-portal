@@ -65,6 +65,12 @@ const DASHBOARD_PAGE = 'index.html';
 const DRAFT_KEY = 'mtq-draft';
 const COMPANY_ADDRESS = 'D-20-3A, Menara SuezCap 1, No.2, Jalan Kerinchi, Gerbang Kerinchi Lestari, 59200, Kuala Lumpur';
 const COMPANY_CONTACT = 'Tel : (603) 2303 1987   |   Email: admin@tsiwealth.com   |   Website: www.tsiwealth.com.my';
+const PAYMENT_INFO = {
+  bank: 'CIMB Islamic',
+  account: '8605462571',
+  name: 'TSI WEALTH PLANNERS SDN. BHD.',
+  reference: 'Nama dalam policy'
+};
 const OPERATOR_STYLE = {
   'Etiqa General Takaful Berhad':        { color: '#E8A317', tint: '#FDF3D7' },
   'Syarikat Takaful Malaysia Am Berhad': { color: '#2E9E4F', tint: '#DFF3E5' },
@@ -169,6 +175,18 @@ function renderPage() {
     </div>
     <div id="quotes-container" class="space-y-5"></div>
     <div id="selection-summary"></div>
+    <div class="rounded-xl bg-brand-navy text-white p-4 sm:p-5">
+      <p class="text-sm font-bold mb-1"><i class="fa-solid fa-building-columns mr-1.5 text-yellow-300"></i>Payment Instruction</p>
+      <p class="text-xs text-slate-300 mb-3">Please bank in the payable amount to:</p>
+      <dl class="grid grid-cols-[110px_1fr] gap-y-2 text-sm">
+        <dt class="text-slate-300">Bank</dt><dd class="font-semibold">${PAYMENT_INFO.bank}</dd>
+        <dt class="text-slate-300">Account No.</dt>
+        <dd class="font-semibold flex flex-wrap items-center gap-2"><span class="font-mono text-base tracking-wider">${PAYMENT_INFO.account}</span>
+          <button type="button" onclick="copyText('${PAYMENT_INFO.account}','Account number copied')" class="px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 text-[11px]"><i class="fa-solid fa-copy mr-1"></i>Copy</button></dd>
+        <dt class="text-slate-300">Account Name</dt><dd class="font-semibold">${PAYMENT_INFO.name}</dd>
+        <dt class="text-slate-300">Reference</dt><dd class="font-semibold">${PAYMENT_INFO.reference} <span class="text-slate-300 font-normal">(name as in the policy)</span></dd>
+      </dl>
+    </div>
     <div class="pt-4 border-t border-slate-100 text-[11px] text-slate-400 leading-relaxed">
       <p class="font-semibold text-slate-500">TSI Wealth Planners</p>
       <p>${COMPANY_ADDRESS}</p>
@@ -531,6 +549,20 @@ function buildQuotationPdf(sel) {
     y += 70;
   }
 
+  // Payment instruction
+  ensure(96); y += 16;
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8.5); pdf.setTextColor(...NAVY);
+  pdf.text('PAYMENT INSTRUCTION', M, y); y += 6;
+  pdf.setTextColor(0);
+  [['Bank', PAYMENT_INFO.bank], ['Account No.', PAYMENT_INFO.account], ['Account Name', PAYMENT_INFO.name],
+   ['Reference', PAYMENT_INFO.reference + ' (name as in the policy)']].forEach(([k, v]) => {
+    pdf.setFillColor(221, 235, 247); pdf.rect(M, y, 110, 18, 'F');
+    pdf.setDrawColor(150); pdf.rect(M, y, CW, 18); pdf.line(M + 110, y, M + 110, y + 18);
+    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.text(k, M + 6, y + 12);
+    pdf.setFont('helvetica', 'normal'); pdf.text(v, M + 116, y + 12);
+    y += 18;
+  });
+
   const pages = pdf.internal.getNumberOfPages();
   for (let i = 1; i <= pages; i++) {
     pdf.setPage(i);
@@ -558,6 +590,8 @@ function coverageText(p) {
   if (p.coverage_start && p.coverage_end) return `${fmtDMY(p.coverage_start)} – ${fmtDMY(p.coverage_end)}`;
   return p.coverage_term || '';
 }
+
+function copyText(text, msg) { navigator.clipboard.writeText(text).then(() => showToast(msg)); }
 
 function showFatal(title, message) {
   document.getElementById('quotation-card').classList.add('hidden');
