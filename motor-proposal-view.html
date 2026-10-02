@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // ===== Supabase connection (standalone) =====
@@ -167,11 +168,11 @@ function renderPage() {
         <p id="ref-line" class="text-xs text-slate-500 font-mono"></p>
       </div>
     </div>
-    ${banner}
+    <div class="pdf-hide">${banner}</div>
     <div class="border border-slate-200 rounded-xl overflow-hidden grid grid-cols-1 sm:grid-cols-2">${details}</div>
     <div class="text-sm text-slate-600">
       <p>I would like to submit the following proposal for your review and consideration:</p>
-      ${isLocked() ? '' : '<p class="text-xs text-slate-400 mt-1">Optional: tap SELECT to mark the option the client prefers. Tap the X to cancel.</p>'}
+      ${isLocked() ? '' : '<p class="pdf-hide text-xs text-slate-400 mt-1">Optional: tap SELECT to mark the option the client prefers. Tap the X to cancel.</p>'}
     </div>
     <div id="quotes-container" class="space-y-5"></div>
     <div id="selection-summary"></div>
@@ -182,7 +183,7 @@ function renderPage() {
         <dt class="text-slate-300">Bank</dt><dd class="font-semibold">${PAYMENT_INFO.bank}</dd>
         <dt class="text-slate-300">Account No.</dt>
         <dd class="font-semibold flex flex-wrap items-center gap-2"><span class="font-mono text-base tracking-wider">${PAYMENT_INFO.account}</span>
-          <button type="button" onclick="copyText('${PAYMENT_INFO.account}','Account number copied')" class="px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 text-[11px]"><i class="fa-solid fa-copy mr-1"></i>Copy</button></dd>
+          <button type="button" onclick="copyText('${PAYMENT_INFO.account}','Account number copied')" class="pdf-hide px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 text-[11px]"><i class="fa-solid fa-copy mr-1"></i>Copy</button></dd>
         <dt class="text-slate-300">Account Name</dt><dd class="font-semibold">${PAYMENT_INFO.name}</dd>
         <dt class="text-slate-300">Reference</dt><dd class="font-semibold">${PAYMENT_INFO.reference} <span class="text-slate-300 font-normal">(name as in the policy)</span></dd>
       </dl>
@@ -235,14 +236,14 @@ function renderQuotes() {
         action = `<button onclick="selectOption(${qi},'${o.code}')" ${selection ? 'disabled title="Cancel the current selection first"' : ''}
             class="px-3 py-1.5 rounded-md text-[11px] font-bold tracking-wide border ${selection ? 'border-slate-200 text-slate-300 cursor-not-allowed' : 'border-brand-navy brand-navy hover:bg-brand-navy hover:text-white'}">SELECT</button>`;
       }
-      return `<tr class="border-t border-slate-100 ${isSel ? 'bg-amber-50' : ''}">
+      return `<tr class="border-t border-slate-100 ${isSel ? 'bg-amber-50' : ''}" ${isSel ? 'data-selected="1"' : ''}>
         <td class="px-3 py-2.5 text-xs text-slate-400">${n + 1}</td>
         <td class="px-3 py-2.5 text-xs font-bold text-slate-800">${escapeHtml(o.name)}</td>
         <td class="px-3 py-2.5 text-xs money">RM${fmtMoney(o.takaful_price)}</td>
         <td class="px-3 py-2.5 text-xs money">RM${fmtMoney(o.road_tax)}</td>
         <td class="px-3 py-2.5 text-xs money">RM${fmtMoney(o.admin_fee)}</td>
         <td class="px-3 py-2.5 text-xs money font-bold text-slate-900">RM${fmtMoney(optTotal(o))}</td>
-        <td class="px-3 py-2.5 text-right whitespace-nowrap">${action}</td>
+        <td class="pdf-action px-3 py-2.5 text-right whitespace-nowrap">${action}</td>
       </tr>`;
     }).join('');
 
@@ -261,7 +262,7 @@ function renderQuotes() {
             <thead class="text-[11px] text-slate-500 bg-slate-50">
               <tr><th class="px-3 py-2 text-left font-semibold">#</th><th class="px-3 py-2 text-left font-semibold">Type</th>
               <th class="px-3 py-2 text-right font-semibold">Takaful</th><th class="px-3 py-2 text-right font-semibold">Road Tax</th>
-              <th class="px-3 py-2 text-right font-semibold">Admin Fee</th><th class="px-3 py-2 text-right font-semibold">Total</th><th class="px-3 py-2"></th></tr>
+              <th class="px-3 py-2 text-right font-semibold">Admin Fee</th><th class="px-3 py-2 text-right font-semibold">Total</th><th class="pdf-action px-3 py-2"></th></tr>
             </thead>
             <tbody>${rows}</tbody>
           </table>
@@ -284,7 +285,7 @@ function renderSummary() {
         <p class="text-xs text-slate-600">${escapeHtml(s.option_name)}, Sum Covered RM${fmtMoney(s.sum_covered)}${hasValue(s.windscreen_covered) ? `, Windscreen RM${fmtMoney(s.windscreen_covered)}` : ''}</p>
         ${isLocked()
           ? (s.exclude_road_tax ? `<p class="mt-2 text-xs font-semibold text-amber-800"><i class="fa-solid fa-square-check mr-1"></i>Road Tax excluded</p>` : '')
-          : `<label class="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+          : `<label data-pdf-exclude="${s.exclude_road_tax ? '1' : '0'}" class="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
                <input id="exclude-roadtax" type="checkbox" ${s.exclude_road_tax ? 'checked' : ''} onchange="toggleExcludeRoadTax(this.checked)"
                  class="w-4 h-4 rounded border-slate-400 accent-[#212F6E] cursor-pointer">
                Exclude Road Tax
@@ -400,179 +401,108 @@ function returnToDashboard() {
   window.location.href = DASHBOARD_PAGE;
 }
 
-// ---------- PDF ----------
-function hexToRgb(hex) { const n = parseInt(hex.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+// ---------- PDF (same design as this page, without the SELECT buttons) ----------
+function pdfFileName() {
+  const clean = v => String(v || '').trim().replace(/\s+/g, '').replace(/[^A-Za-z0-9-]+/g, '');
+  const d = record.quotation_date ? new Date(record.quotation_date) : new Date();
+  const ymd = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+  return `Quotation_${clean(record.reference_no)}_${clean(record.vehicle_reg_no)}_${ymd}.pdf`;
+}
 
-function downloadPdf() {
+async function downloadPdf() {
   if (dirty || !savedId) return showToast('Please click Save first.', 'error');
+  const btn = document.getElementById('btn-pdf');
+  const label = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i><span>Creating PDF...</span>';
   try {
-    const blob = buildQuotationPdf(currentSelectionDetail());
-    const safeReg = String(record.vehicle_reg_no || 'vehicle').replace(/[^a-z0-9_-]+/gi, '');
+    const blob = await buildQuotationPdf();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `Motor-Quotation-${record.reference_no}-${safeReg}.pdf`;
+    a.href = url; a.download = pdfFileName();
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   } catch (err) {
     console.error(err);
     showToast('Unable to create the PDF.', 'error');
+  } finally {
+    btn.innerHTML = label;
+    renderActionState();
   }
 }
 
-function buildQuotationPdf(sel) {
-  const p = record;
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
-  const W = pdf.internal.pageSize.getWidth();
-  const H = pdf.internal.pageSize.getHeight();
-  const M = 40, CW = W - M * 2;
-  const NAVY = [33, 47, 110];
-  let y = 34;
-  const money = v => 'RM' + fmtMoney(v);
-  const ensure = h => { if (y + h > H - 60) { pdf.addPage(); y = 44; } };
+// Copy of the quotation card, cleaned for print
+function buildPrintCopy() {
+  const clone = document.getElementById('quotation-card').cloneNode(true);
+  clone.removeAttribute('id');
+  clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+  clone.querySelectorAll('.pdf-hide, .pdf-action').forEach(el => el.remove());
+  clone.querySelectorAll('svg.svg-inline--fa, i.fa-solid, i.fa-regular').forEach(el => el.remove()); // icons render off-line in print
+  // mark the selected option inside its row instead of the SELECT column
+  clone.querySelectorAll('tr[data-selected="1"]').forEach(tr => {
+    const typeCell = tr.children[1];
+    if (typeCell) typeCell.insertAdjacentHTML('beforeend',
+      ' <span style="display:inline-block;margin-left:6px;padding:0 6px;border-radius:4px;background:#fbbf24;color:#0f172a;font-size:10px;line-height:16px;font-weight:700;vertical-align:middle;">SELECTED</span>');
+  });
+  // the Exclude Road Tax tick box becomes plain text
+  clone.querySelectorAll('[data-pdf-exclude]').forEach(lbl => {
+    if (lbl.dataset.pdfExclude === '1') lbl.outerHTML = '<p class="mt-2 text-xs font-semibold text-amber-800">Road Tax excluded</p>';
+    else lbl.remove();
+  });
+  clone.className = 'bg-white space-y-7';
+  clone.style.cssText = 'width:820px;padding:0;margin:0;border:none;box-shadow:none;';
+  return clone;
+}
 
-  // Header
-  const logoW = 170;
-  pdf.addImage('data:image/png;base64,' + LOGO_BASE64, 'PNG', M, y, logoW, logoW / LOGO_RATIO);
-  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(13); pdf.setTextColor(...NAVY);
-  pdf.text('MOTOR TAKAFUL QUOTATION', W - M, y + 14, { align: 'right' });
-  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); pdf.setTextColor(90);
-  pdf.text(`Ref: ${p.reference_no || '-'}`, W - M, y + 27, { align: 'right' });
-  pdf.text(`Quotation date: ${fmtDMY(p.quotation_date) || '-'}`, W - M, y + 38, { align: 'right' });
-  pdf.setTextColor(0);
-  y += 58;
+async function buildQuotationPdf() {
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:absolute;left:-12000px;top:0;width:820px;background:#ffffff;';
+  const copy = buildPrintCopy();
+  holder.appendChild(copy);
+  document.body.appendChild(holder);
 
-  // Details grid
-  const LBL = 92, half = CW / 2;
-  const cell = (x, w, label, value) => {
-    pdf.setFillColor(221, 235, 247); pdf.rect(x, y, LBL, 18, 'F');
-    pdf.setDrawColor(150); pdf.setLineWidth(0.4); pdf.rect(x, y, w, 18);
-    pdf.line(x + LBL, y, x + LBL, y + 18);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
-    pdf.text(label.toUpperCase() + ' :', x + LBL - 4, y + 12, { align: 'right' });
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-    pdf.text(pdf.splitTextToSize(String(value || '-'), w - LBL - 8)[0], x + LBL + 4, y + 12);
-  };
-  const full = (label, value) => {
-    const lines = pdf.splitTextToSize(String(value || '-'), CW - LBL - 8);
-    const h = Math.max(18, 8 + lines.length * 10);
-    pdf.setFillColor(221, 235, 247); pdf.rect(M, y, LBL, h, 'F');
-    pdf.setDrawColor(150); pdf.rect(M, y, CW, h); pdf.line(M + LBL, y, M + LBL, y + h);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
-    pdf.text(label.toUpperCase() + ' :', M + LBL - 4, y + 12, { align: 'right' });
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-    pdf.text(lines, M + LBL + 4, y + 12);
-    y += h;
-  };
-  const pair = (l1, v1, l2, v2) => { cell(M, half, l1, v1); cell(M + half, half, l2, v2); y += 18; };
-
-  full('Full Name', p.owner_name);
-  pair('IC / Passport', p.owner_id_no, 'No. Plate', p.vehicle_reg_no);
-  pair('Vehicle Type', p.vehicle_type, 'Usage Type', p.usage_type);
-  pair('Model', p.vehicle_model, 'Engine Cap.', p.engine_capacity);
-  pair('NCD', p.ncd, 'Coverage Term', coverageText(p));
-  pair('Email', p.prospect_email, 'Phone No.', p.prospect_phone);
-  full('Vehicle Address', p.vehicle_address);
-  y += 10;
-  pdf.setFontSize(8); pdf.setTextColor(70);
-  pdf.text(`IFAR: ${p.ifar_name || '-'}${p.ifar_phone ? '  (' + p.ifar_phone + ')' : ''}`, M, y);
-  y += 14;
-  pdf.setTextColor(0); pdf.setFontSize(9);
-  pdf.text('I would like to submit the following proposal for your review and consideration:', M, y);
-  y += 12;
-
-  // Operator tables
-  const COLS = [{ t: 'TYPE', w: 190 }, { t: 'TAKAFUL', w: 66 }, { t: 'ROADTAX', w: 66 }, { t: 'ADMIN FEE', w: 62 }, { t: 'TOTAL', w: 70 }, { t: '', w: CW - 454 }];
-  p.quotes.forEach(q => {
-    const opts = q.options || [];
-    const tableH = 20 + 15 + opts.length * 16 + (q.note ? 16 : 0);
-    ensure(tableH + 8);
-    y += 8;
-    const top = y;
-    const st = OPERATOR_STYLE[q.operator] || { color: '#64748b', tint: '#f1f5f9' };
-    pdf.setFillColor(...hexToRgb(st.tint)); pdf.rect(M, y, CW, 20, 'F');
-    pdf.setFillColor(...hexToRgb(st.color)); pdf.rect(M, y, 5, 20, 'F');
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(9);
-    pdf.text(q.operator.toUpperCase(), M + 11, y + 13);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8);
-    const covers = `SC: ${money(q.sum_covered)}` + (hasValue(q.windscreen_covered) ? `   |   Windscreen: ${money(q.windscreen_covered)}` : '');
-    pdf.text(covers, W - M - 6, y + 13, { align: 'right' });
-    y += 20;
-
-    let x = M;
-    pdf.setFillColor(235, 238, 245); pdf.rect(M, y, CW, 15, 'F');
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
-    COLS.forEach(c => { pdf.text(c.t, x + c.w / 2, y + 10, { align: 'center' }); x += c.w; });
-    y += 15;
-
-    opts.forEach(o => {
-      const isSel = sel && sel.operator === q.operator && sel.option_code === o.code;
-      if (isSel) { pdf.setFillColor(255, 236, 153); pdf.rect(M, y, CW, 16, 'F'); }
-      pdf.setDrawColor(200); pdf.line(M, y, M + CW, y);
-      pdf.setFont('helvetica', isSel ? 'bold' : 'normal'); pdf.setFontSize(7.5);
-      const vals = [o.name, money(o.takaful_price), money(o.road_tax), money(o.admin_fee), money(optTotal(o)), isSel ? 'SELECTED' : ''];
-      x = M;
-      COLS.forEach((c, ci) => {
-        if (ci === 0) pdf.text(pdf.splitTextToSize(vals[0], c.w - 8)[0], x + 6, y + 11);
-        else pdf.text(vals[ci], x + c.w / 2, y + 11, { align: 'center' });
-        x += c.w;
-      });
-      y += 16;
+  try {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready;
+    // a little extra room under each section so the last line of text is never clipped
+    [...copy.children].forEach(el => {
+      el.style.paddingBottom = (parseFloat(getComputedStyle(el).paddingBottom) || 0) + 4 + 'px';
     });
-    pdf.setDrawColor(200); pdf.line(M, y, M + CW, y);
-    if (q.note) {
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(7.5);
-      pdf.text(q.note.toUpperCase(), M + CW / 2, y + 11, { align: 'center' });
-      y += 16;
+
+    // each section is placed whole, so tables are never cut across pages
+    const blocks = [];
+    [...copy.children].forEach(el => {
+      if (!el.offsetHeight) return;
+      if (el.children.length > 1 && el.classList.contains('space-y-5')) blocks.push(...[...el.children]); // operator tables
+      else blocks.push(el);
+    });
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+    const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
+    const M = 28, CW = W - M * 2, BOTTOM = H - 30, GAP = 12;
+    const ptPerPx = CW / 820;
+    let y = M;
+
+    for (const el of blocks) {
+      const canvas = await html2canvas(el, { scale: 2, backgroundColor: '#ffffff', windowWidth: 1100, useCORS: true, logging: false });
+      if (!canvas.width || !canvas.height) continue;
+      const h = (canvas.height / 2) * ptPerPx;
+      const w = (canvas.width / 2) * ptPerPx;
+      if (y + h > BOTTOM && y > M) { pdf.addPage(); y = M; }
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', M, y, w, Math.min(h, BOTTOM - M));
+      y += h + GAP;
     }
-    pdf.setDrawColor(150); pdf.rect(M, top, CW, tableH);
-  });
 
-  // Selected option (only when one was chosen)
-  if (sel) {
-    ensure(86); y += 16;
-    pdf.setDrawColor(...NAVY); pdf.setLineWidth(1.2); pdf.rect(M, y, CW, 70);
-    pdf.setLineWidth(0.4);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(...NAVY);
-    pdf.text('SELECTED OPTION', M + 10, y + 15);
-    pdf.setTextColor(0); pdf.setFontSize(10);
-    pdf.text(sel.operator, M + 10, y + 30);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8.5);
-    pdf.text(`${sel.option_name}   |   Sum Covered ${money(sel.sum_covered)}` + (hasValue(sel.windscreen_covered) ? `   |   Windscreen ${money(sel.windscreen_covered)}` : ''), M + 10, y + 43);
-    pdf.text(sel.exclude_road_tax
-      ? `Takaful Price only (Road Tax excluded; full total with road tax & admin fee: ${money(sel.full_total)})`
-      : `Takaful ${money(sel.takaful_price)} + Road Tax ${money(sel.road_tax)} + Admin Fee ${money(sel.admin_fee)}`, M + 10, y + 56);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.setTextColor(90);
-    pdf.text(sel.exclude_road_tax ? 'PAYABLE (EXCL. ROAD TAX)' : 'TOTAL PAYABLE', W - M - 10, y + 30, { align: 'right' });
-    pdf.setTextColor(0); pdf.setFontSize(16);
-    pdf.text(money(sel.total), W - M - 10, y + 50, { align: 'right' });
-    y += 70;
+    const pages = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      pdf.setPage(i);
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(140);
+      pdf.text(`${record.reference_no || ''}   |   Page ${i} of ${pages}`, W / 2, H - 14, { align: 'center' });
+    }
+    return pdf.output('blob');
+  } finally {
+    holder.remove();
   }
-
-  // Payment instruction
-  ensure(96); y += 16;
-  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8.5); pdf.setTextColor(...NAVY);
-  pdf.text('PAYMENT INSTRUCTION', M, y); y += 6;
-  pdf.setTextColor(0);
-  [['Bank', PAYMENT_INFO.bank], ['Account No.', PAYMENT_INFO.account], ['Account Name', PAYMENT_INFO.name],
-   ['Reference', PAYMENT_INFO.reference + ' (name as in the policy)']].forEach(([k, v]) => {
-    pdf.setFillColor(221, 235, 247); pdf.rect(M, y, 110, 18, 'F');
-    pdf.setDrawColor(150); pdf.rect(M, y, CW, 18); pdf.line(M + 110, y, M + 110, y + 18);
-    pdf.setFont('helvetica', 'bold'); pdf.setFontSize(8); pdf.text(k, M + 6, y + 12);
-    pdf.setFont('helvetica', 'normal'); pdf.text(v, M + 116, y + 12);
-    y += 18;
-  });
-
-  const pages = pdf.internal.getNumberOfPages();
-  for (let i = 1; i <= pages; i++) {
-    pdf.setPage(i);
-    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(7); pdf.setTextColor(120);
-    pdf.text(COMPANY_ADDRESS, W / 2, H - 30, { align: 'center' });
-    pdf.text(COMPANY_CONTACT, W / 2, H - 20, { align: 'center' });
-    pdf.text(`${p.reference_no || ''}  |  Page ${i} of ${pages}`, W / 2, H - 10, { align: 'center' });
-    pdf.setTextColor(0);
-  }
-  return pdf.output('blob');
 }
 
 // ---------- Utilities ----------
