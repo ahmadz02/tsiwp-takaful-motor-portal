@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TSI Wealth Planners - Motor Takaful Value Proposal</title>
+<title>TSI Wealth Planners - Motor Takaful Quotation</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
@@ -39,7 +39,7 @@
         <div class="bg-white/10 p-2 rounded-lg text-brand-gold"><i class="fa-solid fa-car-side text-xl"></i></div>
         <div>
           <h1 class="font-bold text-lg leading-none">TSI Wealth Planners</h1>
-          <span class="text-xs text-slate-300">Motor Takaful Value Proposal</span>
+          <span class="text-xs text-slate-300">Motor Takaful Quotation</span>
         </div>
       </div>
       <div class="flex items-center gap-3">
@@ -53,53 +53,59 @@
 
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
       <div>
-        <h2 class="text-2xl font-bold text-slate-900">Motor Takaful Value Proposal</h2>
-        <p class="text-slate-500 text-sm mt-1">Prepare a motor takaful quotation, share the link with the IFAR, and receive the client's choice and payment slip.</p>
+        <h2 class="text-2xl font-bold text-slate-900">Motor Takaful Quotation</h2>
+        <p class="text-slate-500 text-sm mt-1">Prepare motor takaful quotations, record the client's response, and create renewal quotations before expiry.</p>
       </div>
       <button onclick="openProspectModal()" class="inline-flex items-center justify-center bg-brand-navy hover:opacity-90 text-white font-medium px-5 py-2.5 rounded-xl shadow-sm space-x-2">
         <i class="fa-solid fa-plus"></i><span>New Prospect</span>
       </button>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-folder-open"></i></div>
-        <div><p class="text-xs text-slate-500">Open</p><p id="stat-open" class="text-xl font-bold text-slate-800">0</p></div>
-      </div>
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-        <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-paper-plane"></i></div>
-        <div><p class="text-xs text-slate-500">Sent to Sales Dept</p><p id="stat-submitted" class="text-xl font-bold text-slate-800">0</p></div>
+        <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-hourglass-half"></i></div>
+        <div><p class="text-xs text-slate-500">Awaiting Response</p><p id="stat-pending" class="text-xl font-bold text-slate-800">0</p></div>
       </div>
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
         <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-circle-check"></i></div>
-        <div><p class="text-xs text-slate-500">Closed</p><p id="stat-closed" class="text-xl font-bold text-slate-800">0</p></div>
+        <div><p class="text-xs text-slate-500">Accepted</p><p id="stat-accepted" class="text-xl font-bold text-slate-800">0</p></div>
       </div>
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-        <div class="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-car"></i></div>
-        <div><p class="text-xs text-slate-500">Total Prospects</p><p id="stat-total" class="text-xl font-bold text-slate-800">0</p></div>
+        <div class="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><i class="fa-solid fa-circle-xmark"></i></div>
+        <div><p class="text-xs text-slate-500">Declined</p><p id="stat-declined" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center"><i class="fa-solid fa-comment-slash"></i></div>
+        <div><p class="text-xs text-slate-500">No Respond</p><p id="stat-norespond" class="text-xl font-bold text-slate-800">0</p></div>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center"><i class="fa-solid fa-bell"></i></div>
+        <div><p class="text-xs text-slate-500">Renewal Due</p><p id="stat-renewal" class="text-xl font-bold text-slate-800">0</p></div>
       </div>
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap gap-3 justify-between items-center bg-slate-50/50">
-        <h3 class="font-semibold text-slate-800">Prospects</h3>
+        <h3 class="font-semibold text-slate-800">Quotations</h3>
         <div class="flex flex-wrap gap-2">
           <div class="relative">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input id="search-input" type="search" placeholder="Search payment ref, IFAR, prospect, vehicle" class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm w-64 bg-white">
+            <input id="search-input" type="search" placeholder="Search IFAR, prospect, vehicle, ref no." class="pl-8 pr-3 py-1.5 rounded-lg border border-slate-300 text-sm w-64 bg-white">
           </div>
           <select id="status-filter" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm bg-white">
             <option value="">All statuses</option>
-            <option value="OPEN">Open</option>
-            <option value="SUBMITTED">Sent to Sales Dept</option>
-            <option value="CLOSED">Closed</option>
+            <option value="PENDING">Awaiting response</option>
+            <option value="ACCEPTED">Accepted</option>
+            <option value="DECLINED">Declined</option>
+            <option value="NO_RESPOND">No Respond</option>
+            <option value="RENEWAL">Renewal due</option>
           </select>
           <div class="flex items-center gap-1 border border-slate-300 rounded-lg bg-white pl-2">
             <i class="fa-regular fa-calendar text-slate-400 text-xs"></i>
             <select id="date-basis" title="Which date to filter by" class="py-1.5 pr-1 text-sm bg-transparent border-none focus:outline-none">
-              <option value="created_at">Created</option>
-              <option value="submitted_at">Submitted</option>
-              <option value="closed_at">Closed</option>
+              <option value="quotation_date">Quotation date</option>
+              <option value="responded_at">Response date</option>
+              <option value="coverage_end">Expiry date</option>
             </select>
             <select id="month-filter" class="py-1.5 px-1 text-sm bg-transparent border-l border-slate-200 focus:outline-none">
               <option value="">All months</option>
@@ -119,15 +125,13 @@
         <table class="w-full text-left text-sm">
           <thead class="bg-slate-50 text-slate-500 text-xs">
             <tr>
-              <th class="px-5 py-3 font-semibold">Payment Ref No.</th>
               <th class="px-5 py-3 font-semibold">IFAR Name</th>
               <th class="px-5 py-3 font-semibold">Prospect Name</th>
               <th class="px-5 py-3 font-semibold">Vehicle Number</th>
-              <th class="px-5 py-3 font-semibold">Submit Date</th>
-              <th class="px-5 py-3 font-semibold">Closed Date</th>
+              <th class="px-5 py-3 font-semibold">Quotation Date</th>
               <th class="px-5 py-3 font-semibold">Status</th>
-              <th class="px-5 py-3 font-semibold">Attachment</th>
-              <th class="px-5 py-3 font-semibold text-right">Actions</th>
+              <th class="px-5 py-3 font-semibold">Renewal Reminder</th>
+              <th class="px-5 py-3 font-semibold text-right">Action</th>
             </tr>
           </thead>
           <tbody id="prospect-table-body" class="divide-y divide-slate-100"></tbody>
@@ -156,12 +160,12 @@
       <div class="flex justify-between items-center border-b border-slate-100 px-6 sm:px-8 py-5">
         <div>
           <h3 id="modal-title" class="text-xl font-bold text-slate-900">New Prospect</h3>
-          <p class="text-xs text-slate-500 mt-0.5">Motor Takaful Value Proposal</p>
+          <p id="modal-subtitle" class="text-xs text-slate-500 mt-0.5">Motor Takaful Quotation</p>
         </div>
         <button onclick="closeProspectModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <form id="form-prospect" onsubmit="handleSaveProspect(event)" class="px-6 sm:px-8 py-6 space-y-8" novalidate>
+      <form id="form-prospect" onsubmit="handleViewQuotation(event)" class="px-6 sm:px-8 py-6 space-y-8" novalidate>
 
         <!-- IFAR -->
         <section class="space-y-3">
@@ -228,52 +232,13 @@
         </section>
 
         <div class="pt-4 border-t border-slate-100 flex justify-end space-x-3">
+          <p class="mr-auto self-center text-[11px] text-slate-400">Nothing is saved until you click Save on the quotation form.</p>
           <button type="button" onclick="closeProspectModal()" class="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 text-sm font-medium">Cancel</button>
           <button type="submit" id="save-prospect-btn" class="px-5 py-2.5 rounded-xl bg-brand-navy hover:opacity-90 text-white text-sm font-medium shadow-sm flex items-center space-x-2">
-            <i class="fa-solid fa-link"></i><span id="save-prospect-label">Save &amp; Create Link</span>
+            <i class="fa-solid fa-file-invoice"></i><span id="save-prospect-label">View Quotation Form</span>
           </button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ============ SHARE LINK MODAL ============ -->
-  <div id="modal-share" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl mt-16">
-      <div class="text-center space-y-2">
-        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl"><i class="fa-solid fa-link"></i></div>
-        <h3 class="text-xl font-bold text-slate-900">Proposal Link Ready</h3>
-        <p id="share-subtitle" class="text-xs text-slate-500">Share this link with the IFAR. The IFAR or client selects an option and uploads the payment slip.</p>
-      </div>
-      <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center space-x-2">
-        <input type="text" id="share-link-input" readonly class="bg-transparent border-none w-full text-xs text-slate-700 focus:outline-none font-mono">
-        <button onclick="copyShareLink()" class="px-3 py-1.5 bg-brand-navy hover:opacity-90 text-white rounded-lg text-xs font-semibold flex items-center space-x-1 shrink-0">
-          <i class="fa-solid fa-copy"></i><span>Copy</span>
-        </button>
-      </div>
-      <div class="border-t border-slate-100 pt-4 flex flex-col gap-2">
-        <button id="whatsapp-share-btn" onclick="whatsappShareLink()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
-          <i class="fa-brands fa-whatsapp"></i><span id="whatsapp-share-label">Share with IFAR on WhatsApp</span>
-        </button>
-        <button onclick="previewShareLink()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center justify-center space-x-2">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Preview Link</span>
-        </button>
-        <button onclick="closeShareModal()" class="w-full py-2.5 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-medium">Done</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ VIEW DETAIL MODAL ============ -->
-  <div id="modal-view" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-start justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl relative my-8">
-      <div class="flex justify-between items-center border-b border-slate-100 px-6 sm:px-8 py-5">
-        <div>
-          <h3 class="text-xl font-bold text-slate-900">Proposal Details</h3>
-          <p id="view-ref" class="text-xs text-slate-500 mt-0.5 font-mono"></p>
-        </div>
-        <button onclick="closeViewModal()" class="text-slate-400 hover:text-slate-600 p-2"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div id="view-body" class="px-6 sm:px-8 py-6 space-y-6"></div>
     </div>
   </div>
 
@@ -294,15 +259,18 @@
     { code: 'TPT',        name: 'Third Party and Theft' }
   ];
   const DEFAULT_ADMIN_FEE = 20;
-  const STORAGE_BUCKET = 'motor-proposals';
-  const PUBLIC_PAGE = 'motor-proposal-view.html';
+  const QUOTE_PAGE = 'motor-proposal-view.html';   // quotation form page
+  const DRAFT_KEY = 'mtq-draft';                   // unsaved form → quotation page
+  const RENEWAL_WINDOW_DAYS = 60;
+
 
   // ---------- State ----------
   let proposals = [];
   let currentPage = 1;
-  let editingId = null;       // dbId when editing an OPEN case
-  let shareTarget = null;     // proposal being shared
-  let formState = null;       // Part 1 / Part 2 working state
+  let formState = null;          // Part 1 / Part 2 working state
+  let editingId = null;          // row being edited (null = new)
+  let renewedFrom = null;        // row a renewal was duplicated from
+  let previousSelection = null;  // keep the chosen option when editing
 
   window.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('page-size').addEventListener('input', () => { currentPage = 1; renderTable(); });
@@ -316,6 +284,7 @@
     }));
 
     await loadProposals();
+    restoreDraftIfReturning();
   });
 
   // ---------- Data ----------
@@ -323,7 +292,7 @@
     const { data, error } = await supabaseClient.from('motor_proposals').select('*').order('created_at', { ascending: false });
     if (error) {
       console.error(error);
-      showToast('Unable to load prospects from Supabase.', 'error');
+      showToast(`Unable to load quotations: ${supabaseErrorText(error)}`, 'error');
       proposals = [];
     } else {
       proposals = data || [];
@@ -333,6 +302,25 @@
     updateStats();
   }
 
+  // PENDING | ACCEPTED | DECLINED | NO_RESPOND
+  function effectiveStatus(p) {
+    if (p.status === 'ACCEPTED' || p.status === 'DECLINED') return p.status;
+    if (p.coverage_start && todayIso() >= p.coverage_start) return 'NO_RESPOND';
+    return 'PENDING';
+  }
+
+  function renewalOf(p) {
+    return proposals.find(x => x.renewed_from === p.id) || null;
+  }
+
+  function renewalInfo(p) {
+    if (!p.coverage_end) return { state: 'none' };
+    const child = renewalOf(p);
+    if (child) return { state: 'renewed', child };
+    const days = daysBetween(todayIso(), p.coverage_end);
+    return { state: days <= RENEWAL_WINDOW_DAYS ? 'due' : 'later', days };
+  }
+
   function filteredProposals() {
     const q = document.getElementById('search-input').value.trim().toLowerCase();
     const st = document.getElementById('status-filter').value;
@@ -340,15 +328,17 @@
     const month = document.getElementById('month-filter').value;
     const year = document.getElementById('year-filter').value;
     return proposals.filter(p => {
-      if (st && p.status !== st) return false;
+      if (st === 'RENEWAL') { if (renewalInfo(p).state !== 'due') return false; }
+      else if (st && effectiveStatus(p) !== st) return false;
       if (month || year) {
-        if (!p[basis]) return false;                       // e.g. not submitted yet
-        const d = new Date(p[basis]);
+        const raw = basis === 'quotation_date' ? (p.quotation_date || p.created_at) : p[basis];
+        if (!raw) return false;
+        const d = /^\d{4}-\d{2}-\d{2}$/.test(raw) ? new Date(raw + 'T00:00:00') : new Date(raw);
         if (month && d.getMonth() + 1 !== Number(month)) return false;
         if (year && d.getFullYear() !== Number(year)) return false;
       }
       if (!q) return true;
-      return [p.ifar_name, p.owner_name, p.vehicle_reg_no, p.reference_no, p.payment_reference].some(v => String(v || '').toLowerCase().includes(q));
+      return [p.ifar_name, p.owner_name, p.vehicle_reg_no, p.reference_no].some(v => String(v || '').toLowerCase().includes(q));
     });
   }
 
@@ -356,7 +346,9 @@
     const sel = document.getElementById('year-filter');
     const current = sel.value;
     const years = new Set([new Date().getFullYear()]);
-    proposals.forEach(p => ['created_at', 'submitted_at', 'closed_at'].forEach(k => { if (p[k]) years.add(new Date(p[k]).getFullYear()); }));
+    proposals.forEach(p => [p.quotation_date || p.created_at, p.responded_at, p.coverage_end].forEach(v => {
+      if (v) years.add(new Date(/^\d{4}-\d{2}-\d{2}$/.test(v) ? v + 'T00:00:00' : v).getFullYear());
+    }));
     sel.innerHTML = '<option value="">All years</option>' +
       [...years].sort((a, b) => b - a).map(y => `<option value="${y}">${y}</option>`).join('');
     if ([...sel.options].some(o => o.value === current)) sel.value = current;
@@ -365,7 +357,7 @@
   function resetFilters() {
     document.getElementById('search-input').value = '';
     document.getElementById('status-filter').value = '';
-    document.getElementById('date-basis').value = 'created_at';
+    document.getElementById('date-basis').value = 'quotation_date';
     document.getElementById('month-filter').value = '';
     document.getElementById('year-filter').value = '';
     currentPage = 1;
@@ -373,17 +365,34 @@
   }
 
   function updateStats() {
-    document.getElementById('stat-total').textContent = proposals.length;
-    document.getElementById('stat-open').textContent = proposals.filter(p => p.status === 'OPEN').length;
-    document.getElementById('stat-submitted').textContent = proposals.filter(p => p.status === 'SUBMITTED').length;
-    document.getElementById('stat-closed').textContent = proposals.filter(p => p.status === 'CLOSED').length;
+    const count = s => proposals.filter(p => effectiveStatus(p) === s).length;
+    document.getElementById('stat-pending').textContent = count('PENDING');
+    document.getElementById('stat-accepted').textContent = count('ACCEPTED');
+    document.getElementById('stat-declined').textContent = count('DECLINED');
+    document.getElementById('stat-norespond').textContent = count('NO_RESPOND');
+    document.getElementById('stat-renewal').textContent = proposals.filter(p => renewalInfo(p).state === 'due').length;
   }
 
   // ---------- Table ----------
-  function statusBadge(status) {
-    if (status === 'OPEN') return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 whitespace-nowrap"><i class="fa-solid fa-hourglass-half mr-1.5 text-[10px]"></i>Open</span>`;
-    if (status === 'SUBMITTED') return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 whitespace-nowrap"><i class="fa-solid fa-paper-plane mr-1.5 text-[10px]"></i>Sent to Sales</span>`;
-    return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"><i class="fa-solid fa-circle-check mr-1.5 text-[10px]"></i>Closed</span>`;
+  function statusCell(p) {
+    const st = effectiveStatus(p);
+    const undo = `<button onclick="resetResponse('${p.id}')" title="Undo response" class="ml-1 p-1 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-rotate-left text-[11px]"></i></button>`;
+    if (st === 'ACCEPTED') return `<div class="flex items-center"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap"><i class="fa-solid fa-circle-check mr-1.5 text-[10px]"></i>Accepted on ${fmtDMY(p.responded_at)}</span>${undo}</div>`;
+    if (st === 'DECLINED') return `<div class="flex items-center"><span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 whitespace-nowrap"><i class="fa-solid fa-circle-xmark mr-1.5 text-[10px]"></i>Declined on ${fmtDMY(p.responded_at)}</span>${undo}</div>`;
+    if (st === 'NO_RESPOND') return `<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap" title="No response before the coverage start date ${fmtDMY(p.coverage_start)}"><i class="fa-solid fa-comment-slash mr-1.5 text-[10px]"></i>No Respond</span>`;
+    return `<div class="flex gap-1.5">
+      <button onclick="setResponse('${p.id}','ACCEPTED')" class="px-2.5 py-1 rounded-lg border border-emerald-300 text-emerald-700 hover:bg-emerald-600 hover:text-white text-xs font-semibold">Accepted</button>
+      <button onclick="setResponse('${p.id}','DECLINED')" class="px-2.5 py-1 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-600 hover:text-white text-xs font-semibold">Declined</button>
+    </div>`;
+  }
+
+  function renewalCell(p) {
+    const r = renewalInfo(p);
+    if (r.state === 'none') return '<span class="text-slate-300 text-xs">—</span>';
+    if (r.state === 'renewed') return `<span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700"><i class="fa-solid fa-check"></i>Renewal quoted</span><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(r.child.reference_no)}</div>`;
+    const when = r.days > 0 ? `Expires in ${r.days} day${r.days === 1 ? '' : 's'}` : r.days === 0 ? 'Expires today' : `Expired ${-r.days} day${r.days === -1 ? '' : 's'} ago`;
+    if (r.state === 'due') return `<button onclick="openProspectModal('${p.id}','renew')" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold whitespace-nowrap shadow-sm"><i class="fa-solid fa-file-circle-plus mr-1"></i>Create quotation</button><div class="text-[11px] text-red-600 mt-1">${when}</div>`;
+    return `<span class="text-xs text-slate-500 whitespace-nowrap">Expires ${fmtDMY(p.coverage_end)}</span>`;
   }
 
   function renderTable() {
@@ -401,88 +410,132 @@
     document.getElementById('next-page').disabled = currentPage >= totalPages;
 
     if (!rows.length) {
-      tbody.innerHTML = `<tr><td colspan="9" class="px-6 py-10 text-center text-slate-400">${proposals.length ? 'No prospects match your search.' : 'No prospects yet. Click "New Prospect" to begin.'}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center text-slate-400">${proposals.length ? 'No quotations match your filters.' : 'No quotations yet. Click "New Prospect" to begin.'}</td></tr>`;
       return;
     }
 
     tbody.innerHTML = pageRows.map(p => {
-      const attach = [];
-      if (p.pdf_path) attach.push(`<button onclick="openAttachment('${p.id}','pdf')" class="px-2 py-1 rounded-md bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-semibold hover:bg-rose-100"><i class="fa-solid fa-file-pdf mr-1"></i>Proposal</button>`);
-      if (p.payment_slip_path) attach.push(`<button onclick="openAttachment('${p.id}','slip')" class="px-2 py-1 rounded-md bg-slate-50 text-slate-700 border border-slate-200 text-[11px] font-semibold hover:bg-slate-100"><i class="fa-solid fa-receipt mr-1"></i>Slip</button>`);
-
-      const actions = [];
-      actions.push(`<button onclick="openViewModal('${p.id}')" title="View" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-eye"></i></button>`);
-      if (p.status === 'OPEN') {
-        actions.push(`<button onclick="openShareModal('${p.id}')" title="Share link with IFAR" class="p-2 brand-navy hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-share-nodes"></i></button>`);
-        actions.push(`<button onclick="openProspectModal('${p.id}')" title="Edit" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-pen"></i></button>`);
+      const editable = p.status === 'QUOTED';
+      const actions = [
+        `<button onclick="viewQuotation('${p.id}')" title="View quotation form" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-eye"></i></button>`
+      ];
+      if (editable) {
+        actions.push(`<button onclick="openProspectModal('${p.id}','edit')" title="Edit" class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"><i class="fa-solid fa-pen"></i></button>`);
         actions.push(`<button onclick="deleteProspect('${p.id}')" title="Delete" class="p-2 text-rose-500 hover:bg-rose-50 rounded-lg"><i class="fa-solid fa-trash"></i></button>`);
       }
-      if (p.status === 'SUBMITTED') {
-        actions.push(`<button onclick="closeCase('${p.id}')" class="px-3 py-1.5 bg-brand-navy hover:opacity-90 text-white rounded-lg text-xs font-semibold inline-flex items-center gap-1"><i class="fa-solid fa-lock"></i>Close</button>`);
-      }
-
-      return `<tr class="hover:bg-slate-50/80">
-        <td class="px-5 py-4">${p.payment_reference ? `<div class="font-mono text-xs font-semibold text-slate-800 break-all">${escapeHtml(p.payment_reference)}</div>${p.payment_amount != null ? `<div class="text-[11px] text-slate-400">RM ${fmtMoney(p.payment_amount)}</div>` : ''}` : '<span class="text-slate-300 text-xs">—</span>'}</td>
+      return `<tr class="hover:bg-slate-50/80 align-top">
         <td class="px-5 py-4"><div class="font-semibold text-slate-800">${escapeHtml(p.ifar_name)}</div><div class="text-xs text-slate-400">${escapeHtml(p.ifar_phone)}</div></td>
         <td class="px-5 py-4"><div class="font-bold text-slate-900">${escapeHtml(p.owner_name)}</div><div class="text-[11px] text-slate-400 font-mono">${escapeHtml(p.reference_no)}</div></td>
         <td class="px-5 py-4"><div class="font-semibold text-slate-800 font-mono">${escapeHtml(p.vehicle_reg_no)}</div><div class="text-xs text-slate-400">${escapeHtml(p.vehicle_model)}</div></td>
-        <td class="px-5 py-4 text-xs text-slate-600 whitespace-nowrap">${fmtDate(p.submitted_at)}</td>
-        <td class="px-5 py-4 text-xs text-slate-600 whitespace-nowrap">${fmtDate(p.closed_at)}</td>
-        <td class="px-5 py-4">${statusBadge(p.status)}</td>
-        <td class="px-5 py-4"><div class="flex flex-wrap gap-1">${attach.join('') || '<span class="text-slate-300 text-xs">—</span>'}</div></td>
+        <td class="px-5 py-4 text-xs text-slate-600 whitespace-nowrap">${fmtDMY(p.quotation_date || p.created_at)}</td>
+        <td class="px-5 py-4">${statusCell(p)}</td>
+        <td class="px-5 py-4">${renewalCell(p)}</td>
         <td class="px-5 py-4 text-right whitespace-nowrap">${actions.join('')}</td>
       </tr>`;
     }).join('');
   }
 
+  // ---------- Status ----------
+  async function setResponse(id, status) {
+    const p = proposals.find(x => x.id === id);
+    if (!p || effectiveStatus(p) !== 'PENDING') return;
+    const label = status === 'ACCEPTED' ? 'Accepted' : 'Declined';
+    if (!confirm(`Mark the quotation for ${p.owner_name} (${p.vehicle_reg_no}) as ${label}?`)) return;
+    const now = new Date().toISOString();
+    const { data, error } = await supabaseClient.from('motor_proposals')
+      .update({ status, responded_at: now, updated_at: now, audit_log: [...(p.audit_log || []), { action: `Marked as ${label}`, timestamp: now }] })
+      .eq('id', id).eq('status', 'QUOTED').select('id');
+    if (error) { console.error(error); return showToast(`Unable to update: ${supabaseErrorText(error)}`, 'error'); }
+    if (!data || !data.length) showToast('This quotation was already updated. The list has been refreshed.', 'error');
+    else showToast(`${label} on ${fmtDMY(now)}.`);
+    await loadProposals();
+  }
+
+  async function resetResponse(id) {
+    const p = proposals.find(x => x.id === id);
+    if (!p) return;
+    if (!confirm(`Undo "${p.status === 'ACCEPTED' ? 'Accepted' : 'Declined'}" for ${p.owner_name} and set it back to awaiting response?`)) return;
+    const now = new Date().toISOString();
+    const { error } = await supabaseClient.from('motor_proposals')
+      .update({ status: 'QUOTED', responded_at: null, updated_at: now, audit_log: [...(p.audit_log || []), { action: 'Response undone', timestamp: now }] })
+      .eq('id', id);
+    if (error) { console.error(error); return showToast(`Unable to update: ${supabaseErrorText(error)}`, 'error'); }
+    showToast('Response undone.');
+    await loadProposals();
+  }
+
   async function deleteProspect(id) {
     const p = proposals.find(x => x.id === id);
-    if (!p || p.status !== 'OPEN') return showToast('Only open cases can be deleted.', 'error');
-    if (!confirm(`Delete the prospect for ${p.owner_name} (${p.vehicle_reg_no})? This cannot be undone.`)) return;
-    const { data, error } = await supabaseClient.from('motor_proposals').delete().eq('id', id).eq('status', 'OPEN').select('id');
+    if (!p || p.status !== 'QUOTED') return showToast('Accepted or declined quotations cannot be deleted.', 'error');
+    if (!confirm(`Delete the quotation for ${p.owner_name} (${p.vehicle_reg_no})? This cannot be undone.`)) return;
+    const { data, error } = await supabaseClient.from('motor_proposals').delete().eq('id', id).eq('status', 'QUOTED').select('id');
     if (error || !data?.length) {
       console.error(error);
-      showToast('Unable to delete. The case may have been submitted already.', 'error');
+      showToast(error ? `Unable to delete: ${supabaseErrorText(error)}` : 'Unable to delete. The quotation may have been accepted or declined.', 'error');
     } else {
-      showToast('Prospect deleted.');
+      showToast('Quotation deleted.');
     }
     await loadProposals();
   }
 
-  async function closeCase(id) {
-    const p = proposals.find(x => x.id === id);
-    if (!p || p.status !== 'SUBMITTED') return;
-    if (!confirm(`Mark ${p.reference_no} (${p.owner_name}) as closed?`)) return;
-    const now = new Date().toISOString();
-    const auditLog = [...(p.audit_log || []), { action: 'Case closed by admin', timestamp: now }];
-    const { error } = await supabaseClient.from('motor_proposals')
-      .update({ status: 'CLOSED', closed_at: now, updated_at: now, audit_log: auditLog })
-      .eq('id', id).eq('status', 'SUBMITTED');
-    if (error) { console.error(error); return showToast('Unable to close this case.', 'error'); }
-    showToast('Case closed.');
-    closeViewModal();
-    await loadProposals();
+  function viewQuotation(id) {
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch (_) {}
+    window.location.href = `${QUOTE_PAGE}?id=${encodeURIComponent(id)}`;
   }
 
-  async function openAttachment(id, kind) {
-    const p = proposals.find(x => x.id === id);
-    const path = kind === 'pdf' ? p?.pdf_path : p?.payment_slip_path;
-    if (!path) return;
-    const win = window.open('', '_blank');   // open first so pop-up blockers allow it
-    const { data, error } = await supabaseClient.storage.from(STORAGE_BUCKET).createSignedUrl(path, 300);
-    if (error || !data?.signedUrl) {
-      console.error(error);
-      if (win) win.close();
-      return showToast('Unable to open the attachment.', 'error');
+  // ---------- Form → quotation form (nothing saved here) ----------
+  function handleViewQuotation(e) {
+    e.preventDefault();
+    const record = {};
+    Object.entries(FIELD_MAP).forEach(([el, col]) => { record[col] = document.getElementById(el).value.trim() || null; });
+
+    const required = [['ifar_name', 'IFAR Name'], ['ifar_phone', 'IFAR Phone Number'], ['owner_name', 'Name of Vehicle Owner'],
+      ['owner_id_no', 'Identification Number'], ['vehicle_reg_no', 'Vehicle Registration Number'], ['vehicle_type', 'Type of Vehicle'],
+      ['vehicle_model', 'Vehicle Brand and Model'], ['usage_type', 'Vehicle Usage Type']];
+    const missing = required.filter(([k]) => !record[k]).map(([, label]) => label);
+    if (missing.length) return showToast(`Please fill in: ${missing.join(', ')}.`, 'error');
+    if (record.prospect_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.prospect_email)) return showToast('Prospect email address looks invalid.', 'error');
+
+    const covFrom = document.getElementById('in-cov-from').value, covTo = document.getElementById('in-cov-to').value;
+    if ((covFrom && !covTo) || (!covFrom && covTo)) return showToast('Please pick both the coverage start and end dates.', 'error');
+    if (covFrom && covTo && covTo <= covFrom) return showToast('Coverage end date must be after the start date.', 'error');
+    record.coverage_start = covFrom || null;
+    record.coverage_end = covTo || null;
+
+    const { quotes, errors } = buildQuotes();
+    if (errors.length) return showToast(errors[0], 'error');
+    record.quotes = quotes;
+
+    const original = editingId ? proposals.find(x => x.id === editingId) : null;
+    if (original) record.reference_no = original.reference_no;
+    record.selected_quote = previousSelection;
+
+    const draft = { mode: editingId ? 'edit' : (renewedFrom ? 'renew' : 'new'), id: editingId, renewed_from: renewedFrom, record };
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (err) {
+      console.error(err);
+      return showToast('Your browser blocked temporary storage, so the quotation form cannot open.', 'error');
     }
-    if (win) win.location.href = data.signedUrl; else window.location.href = data.signedUrl;
+    window.location.href = `${QUOTE_PAGE}?draft=1`;
   }
 
-  // ---------- Prospect modal ----------
+  // Coming back from the quotation form without saving: reopen the form with the entries
+  function restoreDraftIfReturning() {
+    let draft = null;
+    try { draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) || 'null'); } catch (_) {}
+    if (!draft || !draft.returning) return;
+    draft.returning = false;
+    try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); } catch (_) {}
+    fillModal(draft.record, { mode: draft.mode, titleMode: 'draft', editingId: draft.id, renewedFrom: draft.renewed_from });
+    previousSelection = draft.record.selected_quote || null;
+    showToast('Your unsaved entries were restored. Click "View Quotation Form" to continue.');
+  }
+
   function blankFormState() {
     return {
       operators: OPERATORS.map(() => ({
-        checked: false, sum_covered: '', road_tax: '', admin_fee: DEFAULT_ADMIN_FEE, note: '',
+        checked: false, sum_covered: '', windscreen_covered: '', road_tax: '', admin_fee: DEFAULT_ADMIN_FEE, note: '',
         options: Object.fromEntries(COVERAGE_OPTIONS.map(o => [o.code, { checked: false, takaful_price: '', road_tax: '' }]))
       }))
     };
@@ -496,6 +549,7 @@
       const op = st.operators[i];
       op.checked = true;
       op.sum_covered = q.sum_covered ?? '';
+      op.windscreen_covered = q.windscreen_covered ?? '';
       op.road_tax = q.road_tax ?? '';
       op.admin_fee = q.admin_fee ?? DEFAULT_ADMIN_FEE;
       op.note = q.note || '';
@@ -514,32 +568,72 @@
     'in-prospect-phone': 'prospect_phone', 'in-ncd': 'ncd', 'in-coverage-term': 'coverage_term'
   };
 
-  function openProspectModal(id) {
+  // mode: 'new' | 'edit' | 'renew'   source: a saved row or an unsaved draft record
+  function openProspectModal(id, mode) {
+    mode = mode || (id ? 'edit' : 'new');
+    const p = id ? proposals.find(x => x.id === id) : null;
+    if (mode === 'edit' && (!p || p.status !== 'QUOTED')) return showToast('Accepted or declined quotations can no longer be edited.', 'error');
+    if (mode === 'renew' && !p) return;
+    fillModal(mode === 'new' ? null : p, {
+      mode,
+      editingId: mode === 'edit' ? p.id : null,
+      renewedFrom: mode === 'renew' ? p.id : null
+    });
+  }
+
+  function fillModal(record, ctx) {
     const form = document.getElementById('form-prospect');
     form.reset();
-    editingId = null;
+    // drop any extra options added for older values
+    ['in-vehicle-type', 'in-usage-type'].forEach(id => {
+      const sel = document.getElementById(id);
+      [...sel.options].forEach(o => { if (o.dataset.extra) o.remove(); });
+    });
+    editingId = ctx.editingId || null;
+    renewedFrom = ctx.renewedFrom || null;
+    previousSelection = null;
     formState = blankFormState();
     loadCoverageTerm('');
-    document.getElementById('modal-title').textContent = 'New Prospect';
-    document.getElementById('save-prospect-label').textContent = 'Save & Create Link';
 
-    if (id) {
-      const p = proposals.find(x => x.id === id);
-      if (!p || p.status !== 'OPEN') return showToast('Only open cases can be edited.', 'error');
-      editingId = id;
+    if (record) {
       Object.entries(FIELD_MAP).forEach(([el, col]) => {
         const input = document.getElementById(el);
-        const val = p[col] ?? '';
+        const val = record[col] ?? '';
         if (input.tagName === 'SELECT' && val && ![...input.options].some(o => o.value === val)) {
-          input.add(new Option(val, val));            // keep an older/unlisted value visible
+          const opt = new Option(val, val); opt.dataset.extra = '1'; input.add(opt);
         }
         input.value = val;
       });
-      loadCoverageTerm(p.coverage_term);
-      formState = formStateFromQuotes(p.quotes);
-      document.getElementById('modal-title').textContent = `Edit Prospect · ${p.reference_no}`;
-      document.getElementById('save-prospect-label').textContent = 'Save Changes';
+      if (record.coverage_start || record.coverage_end) {
+        document.getElementById('in-cov-from').value = record.coverage_start || '';
+        document.getElementById('in-cov-to').value = record.coverage_end || '';
+        updateCoverageTerm();
+      } else {
+        loadCoverageTerm(record.coverage_term);
+      }
+      formState = formStateFromQuotes(record.quotes);
+      if (ctx.mode === 'edit') previousSelection = record.selected_quote || null;
     }
+
+    if (ctx.mode === 'renew' && !ctx.titleMode) {
+      // next coverage year: day after the old expiry, for one year
+      const oldEnd = document.getElementById('in-cov-to').value;
+      if (oldEnd) {
+        document.getElementById('in-cov-from').value = addDaysIso(oldEnd, 1);
+        onCoverageFromChange();
+      }
+    }
+
+    const titles = {
+      new:   ['New Prospect', 'Motor Takaful Quotation'],
+      edit:  [`Edit Quotation · ${record?.reference_no || ''}`, 'Changes apply to this quotation only'],
+      renew: ['Renewal Quotation', `Duplicated from ${record?.reference_no || ''}. Saving creates a new quotation; the original stays unchanged.`],
+      draft: ['Continue Unsaved Quotation', 'Restored from the quotation form. Nothing has been saved yet.']
+    };
+    const [t, sub] = titles[ctx.titleMode || ctx.mode];
+    document.getElementById('modal-title').textContent = t;
+    document.getElementById('modal-subtitle').textContent = sub;
+
     renderPart1();
     renderPart2();
     document.getElementById('modal-prospect').classList.remove('hidden');
@@ -547,6 +641,7 @@
 
   function closeProspectModal() {
     document.getElementById('modal-prospect').classList.add('hidden');
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch (_) {}
   }
 
   // Part 1: operator cards
@@ -610,9 +705,11 @@
           <p class="font-bold text-sm text-slate-900">${escapeHtml(op.name)}</p>
         </div>
         <div class="p-4 space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <div><label class="field-label">Sum Covered (RM) *</label>
               <input type="number" min="0" step="0.01" value="${escapeHtml(st.sum_covered)}" placeholder="e.g. 94900" oninput="setOpField(${i},'sum_covered',this.value)" class="field money"></div>
+            <div><label class="field-label">Windscreen Covered (RM)</label>
+              <input type="number" min="0" step="0.01" value="${escapeHtml(st.windscreen_covered)}" placeholder="e.g. 3000" oninput="setOpField(${i},'windscreen_covered',this.value)" class="field money"></div>
             <div><label class="field-label">Road Tax Amount (RM)</label>
               <input type="number" min="0" step="0.01" value="${escapeHtml(st.road_tax)}" placeholder="e.g. 359.40" oninput="setOpField(${i},'road_tax',this.value)" class="field money"></div>
             <div><label class="field-label">Admin Amount (RM)</label>
@@ -627,6 +724,7 @@
             <div class="px-3 py-2 bg-slate-50 text-xs text-slate-600 flex flex-wrap gap-x-6 gap-y-1 border-b border-slate-200">
               <span>Takaful Operator: <b class="text-slate-800">${escapeHtml(op.name)}</b></span>
               <span>Sum Covered: <b class="text-slate-800" id="sc-label-${i}">${st.sum_covered ? 'RM ' + fmtMoney(st.sum_covered) : '—'}</b></span>
+              <span>Windscreen Covered: <b class="text-slate-800" id="ws-label-${i}">${st.windscreen_covered ? 'RM ' + fmtMoney(st.windscreen_covered) : '—'}</b></span>
             </div>
             <div class="overflow-x-auto">
               <table class="w-full min-w-[620px]">
@@ -664,6 +762,10 @@
     }
     if (field === 'admin_fee') {
       document.querySelectorAll(`[data-adminfee="${i}"]`).forEach(td => { td.textContent = fmtMoney(value); });
+    }
+    if (field === 'windscreen_covered') {
+      const wl = document.getElementById(`ws-label-${i}`);
+      if (wl) wl.textContent = value ? 'RM ' + fmtMoney(value) : '—';
     }
     if (field === 'sum_covered') {
       const lbl = document.getElementById(`sc-label-${i}`);
@@ -705,6 +807,7 @@
       quotes.push({
         operator: op.name,
         sum_covered: round2(num(st.sum_covered)),
+        windscreen_covered: st.windscreen_covered === '' || st.windscreen_covered == null ? null : round2(num(st.windscreen_covered)),
         road_tax: round2(num(st.road_tax)),
         admin_fee: round2(num(st.admin_fee)),
         note: (st.note || '').trim(),
@@ -719,162 +822,6 @@
     if (!quotes.length) errors.unshift('Select at least one Takaful operator in Part 1.');
     return { quotes, errors };
   }
-
-  async function handleSaveProspect(e) {
-    e.preventDefault();
-    const record = {};
-    Object.entries(FIELD_MAP).forEach(([el, col]) => { record[col] = document.getElementById(el).value.trim() || null; });
-
-    const required = [['ifar_name', 'IFAR Name'], ['ifar_phone', 'IFAR Phone Number'], ['owner_name', 'Name of Vehicle Owner'],
-      ['owner_id_no', 'Identification Number'], ['vehicle_reg_no', 'Vehicle Registration Number'], ['vehicle_type', 'Type of Vehicle'],
-      ['vehicle_model', 'Vehicle Brand and Model'], ['usage_type', 'Vehicle Usage Type']];
-    const missing = required.filter(([k]) => !record[k]).map(([, label]) => label);
-    if (missing.length) return showToast(`Please fill in: ${missing.join(', ')}.`, 'error');
-    if (record.prospect_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.prospect_email)) return showToast('Prospect email address looks invalid.', 'error');
-
-    const covFrom = document.getElementById('in-cov-from').value, covTo = document.getElementById('in-cov-to').value;
-    if ((covFrom && !covTo) || (!covFrom && covTo)) return showToast('Please pick both the coverage start and end dates.', 'error');
-    if (covFrom && covTo && covTo <= covFrom) return showToast('Coverage end date must be after the start date.', 'error');
-
-    const { quotes, errors } = buildQuotes();
-    if (errors.length) return showToast(errors[0], 'error');
-    record.quotes = quotes;
-
-    const btn = document.getElementById('save-prospect-btn');
-    btn.disabled = true;
-    const now = new Date().toISOString();
-    let result;
-    if (editingId) {
-      const p = proposals.find(x => x.id === editingId);
-      record.updated_at = now;
-      record.audit_log = [...(p?.audit_log || []), { action: 'Proposal edited by admin', timestamp: now }];
-      result = await supabaseClient.from('motor_proposals').update(record).eq('id', editingId).eq('status', 'OPEN').select('*');
-      if (!result.error) {
-        if (!result.data || !result.data.length) {
-          btn.disabled = false;
-          return showToast('Not saved: this case is no longer Open (already sent to Sales) or was deleted. Refresh the list.', 'error');
-        }
-        result.data = result.data[0];
-      }
-    } else {
-      record.audit_log = [{ action: 'Prospect created by admin', timestamp: now }];
-      result = await supabaseClient.from('motor_proposals').insert(record).select('*').single();
-    }
-    btn.disabled = false;
-
-    if (result.error) {
-      console.error(result.error);
-      return showToast(`Unable to save: ${supabaseErrorText(result.error)}`, 'error');
-    }
-    const wasEditing = !!editingId;
-    closeProspectModal();
-    await loadProposals();
-    showToast(wasEditing ? 'Changes saved.' : 'Prospect created.');
-    if (!wasEditing) openShareModal(result.data.id);
-  }
-
-  // ---------- Share modal ----------
-  function shareUrlFor(p) {
-    return new URL(`${PUBLIC_PAGE}?token=${p.public_token}`, window.location.href).href;
-  }
-
-  function openShareModal(id) {
-    shareTarget = proposals.find(x => x.id === id);
-    if (!shareTarget) return;
-    document.getElementById('share-link-input').value = shareUrlFor(shareTarget);
-    document.getElementById('share-subtitle').textContent = `Share this link with ${shareTarget.ifar_name}. The IFAR or client selects one option and uploads the payment slip.`;
-    document.getElementById('whatsapp-share-label').textContent = `Share with ${shareTarget.ifar_name} on WhatsApp`;
-    document.getElementById('modal-share').classList.remove('hidden');
-  }
-
-  function closeShareModal() { document.getElementById('modal-share').classList.add('hidden'); }
-
-  function copyShareLink() {
-    const input = document.getElementById('share-link-input');
-    input.select();
-    navigator.clipboard.writeText(input.value).then(() => showToast('Link copied to clipboard!'));
-  }
-
-  function whatsappShareLink() {
-    if (!shareTarget) return;
-    let digits = String(shareTarget.ifar_phone || '').replace(/\D/g, '');
-    if (digits.startsWith('0')) digits = '6' + digits;       // Malaysian local → 60…
-    const msg = `Salam ${shareTarget.ifar_name}, here is the Motor Takaful Value Proposal for ${shareTarget.owner_name} (${shareTarget.vehicle_reg_no}):\n${shareUrlFor(shareTarget)}`;
-    window.open(`https://wa.me/${digits}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener');
-  }
-
-  function previewShareLink() {
-    const url = document.getElementById('share-link-input').value;
-    if (url) window.open(url, '_blank', 'noopener');
-  }
-
-  // ---------- View modal ----------
-  function openViewModal(id) {
-    const p = proposals.find(x => x.id === id);
-    if (!p) return;
-    document.getElementById('view-ref').textContent = `${p.reference_no}  |  Created ${fmtDate(p.created_at)}`;
-    const sel = p.selected_quote;
-    const detail = [
-      ['IFAR', `${p.ifar_name} (${p.ifar_phone})`], ['Status', p.status === 'SUBMITTED' ? 'Sent to Sales Dept' : p.status === 'OPEN' ? 'Open' : 'Closed'],
-      ['Name of Vehicle Owner', p.owner_name], ['IC / Passport', p.owner_id_no],
-      ['Vehicle Reg. No.', p.vehicle_reg_no], ['Type of Vehicle', p.vehicle_type],
-      ['Brand & Model', p.vehicle_model], ['Engine Capacity', p.engine_capacity],
-      ['Usage Type', p.usage_type], ['NCD', p.ncd],
-      ['Coverage Term', p.coverage_term], ['Email', p.prospect_email],
-      ['Phone', p.prospect_phone], ['Vehicle Address', p.vehicle_address]
-    ].map(([k, v]) => `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3"><p class="text-[11px] text-slate-400 font-semibold">${k}</p><p class="text-sm font-semibold text-slate-800 mt-0.5 break-words">${escapeHtml(v || '—')}</p></div>`).join('');
-
-    const tables = (p.quotes || []).map(q => {
-      const op = OPERATORS.find(o => o.name === q.operator) || { color: '#64748b', tint: '#f1f5f9' };
-      const rows = (q.options || []).map((o, n) => {
-        const isSel = sel && sel.operator === q.operator && sel.option_code === o.code;
-        const total = num(o.takaful_price) + num(o.road_tax) + num(o.admin_fee);
-        return `<tr class="border-t border-slate-100 ${isSel ? 'bg-amber-50' : ''}">
-          <td class="px-3 py-2 text-xs text-slate-400">${n + 1}</td>
-          <td class="px-3 py-2 text-xs font-semibold text-slate-700">${escapeHtml(o.name)} ${isSel ? '<span class="ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-[10px] text-slate-900 font-bold">SELECTED</span>' : ''}</td>
-          <td class="px-3 py-2 text-xs money">${fmtMoney(o.takaful_price)}</td>
-          <td class="px-3 py-2 text-xs money">${fmtMoney(o.road_tax)}</td>
-          <td class="px-3 py-2 text-xs money">${fmtMoney(o.admin_fee)}</td>
-          <td class="px-3 py-2 text-xs money font-bold">${fmtMoney(total)}</td></tr>`;
-      }).join('');
-      return `<div class="border border-slate-200 rounded-xl overflow-hidden">
-        <div class="flex justify-between items-center px-4 py-2.5" style="background:${op.tint}">
-          <span class="font-bold text-sm text-slate-900">${escapeHtml(q.operator)}</span>
-          <span class="text-xs text-slate-600">Sum Covered: <b>RM ${fmtMoney(q.sum_covered)}</b></span>
-        </div>
-        <div class="overflow-x-auto"><table class="w-full min-w-[560px]">
-          <thead class="text-[11px] text-slate-500"><tr><th class="px-3 py-2 text-left">#</th><th class="px-3 py-2 text-left">Option</th><th class="px-3 py-2 text-right">Takaful</th><th class="px-3 py-2 text-right">Road Tax</th><th class="px-3 py-2 text-right">Admin Fee</th><th class="px-3 py-2 text-right">Total</th></tr></thead>
-          <tbody>${rows}</tbody></table></div>
-        ${q.note ? `<p class="px-4 py-2 text-[11px] font-semibold text-slate-600 border-t border-slate-100 text-center">${escapeHtml(q.note)}</p>` : ''}
-      </div>`;
-    }).join('');
-
-    const payment = p.status === 'OPEN' ? '' : `
-      <div class="border border-slate-200 rounded-xl p-4 space-y-3">
-        <p class="text-sm font-bold text-slate-800">Payment</p>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
-          <div><p class="text-[11px] text-slate-400 font-semibold">Payment Amount</p><p class="font-semibold">RM ${fmtMoney(p.payment_amount)}</p>
-            ${sel && sel.exclude_road_tax ? `<p class="text-[11px] font-semibold text-amber-700 mt-0.5"><i class="fa-solid fa-circle-info mr-1"></i>Road Tax excluded (Takaful Price only)</p>` : ''}
-            ${sel && Math.abs(num(p.payment_amount) - num(sel.total)) > 0.009 ? `<p class="text-[11px] text-rose-600 mt-0.5">Differs from selected total RM ${fmtMoney(sel.total)}</p>` : ''}</div>
-          <div><p class="text-[11px] text-slate-400 font-semibold">Payment Reference No.</p><p class="font-semibold break-words">${escapeHtml(p.payment_reference || '—')}</p></div>
-          <div><p class="text-[11px] text-slate-400 font-semibold">Sent to Sales Dept</p><p class="font-semibold">${fmtDateTime(p.submitted_at)}</p></div>
-        </div>
-        <div class="flex flex-wrap gap-2">
-          ${p.pdf_path ? `<button onclick="openAttachment('${p.id}','pdf')" class="px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-semibold"><i class="fa-solid fa-file-pdf mr-1"></i>Proposal &amp; Payment PDF</button>` : ''}
-          ${p.payment_slip_path ? `<button onclick="openAttachment('${p.id}','slip')" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold"><i class="fa-solid fa-receipt mr-1"></i>Original Payment Slip</button>` : ''}
-          ${p.status === 'SUBMITTED' ? `<button onclick="closeCase('${p.id}')" class="px-3 py-2 rounded-lg bg-brand-navy text-white text-xs font-semibold ml-auto"><i class="fa-solid fa-lock mr-1"></i>Close Case</button>` : ''}
-        </div>
-      </div>`;
-
-    document.getElementById('view-body').innerHTML = `
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${detail}</div>
-      <div class="space-y-4">${tables}</div>
-      ${payment}`;
-    document.getElementById('modal-view').classList.remove('hidden');
-  }
-
-  function closeViewModal() { document.getElementById('modal-view').classList.add('hidden'); }
-
 
   // ---------- Coverage term date pickers ----------
   // Stored in coverage_term as "DD/MM/YYYY – DD/MM/YYYY" so the link page and PDF show it as before.
@@ -927,6 +874,25 @@
   }
 
   // ---------- Utilities ----------
+  function todayIso() {
+    const d = new Date(), pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  function addDaysIso(iso, days) {
+    const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + days);
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  function daysBetween(fromIso, toIso) {
+    return Math.round((new Date(toIso + 'T00:00:00') - new Date(fromIso + 'T00:00:00')) / 86400000);
+  }
+  function fmtDMY(v) {
+    if (!v) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) { const [y, m, d] = v.split('-'); return `${d}/${m}/${y}`; }
+    const d = new Date(v), pad = n => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  }
+
   function num(v) { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; }
   function round2(n) { return Math.round(n * 100) / 100; }
   function fmtMoney(v) { return num(v).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
